@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deposit — CYRO</title>
+<style>
+/* === Reset & Base === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --gold: #E59303;
+  --gold-light: rgba(229,147,3,0.08);
+  --gold-mid: rgba(229,147,3,0.18);
+  --bg: #ffffff;
+  --text: #1a1a2e;
+  --text-muted: #4a4a5e;
+  --text-light: #8a8a9e;
+  --border: #e4e4ec;
+  --card-bg: #ffffff;
+  --radius: 10px;
+  --max-w: 520px;
+  --font: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0b1a;
+    --text: #e8e8f0;
+    --text-muted: #a0a0b8;
+    --text-light: #6a6a80;
+    --border: #2a2a40;
+    --card-bg: #111128;
+    --gold-light: rgba(229,147,3,0.06);
+    --gold-mid: rgba(229,147,3,0.12);
+  }
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* === Simple Nav === */
+.auth-nav {
+  padding: 20px 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.auth-nav a.logo-link {
+  text-decoration: none;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  position: relative;
+}
+.auth-nav .logo-main {
+  font-size: 20px; font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--text);
+}
+.auth-nav .logo-main .c-gold { color: var(--gold); }
+.auth-nav .logo-main .y-gold { color: var(--gold); }
+.auth-nav .logo-tagline {
+  display: block;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-light);
+  position: absolute;
+  bottom: -13px;
+  left: 0;
+  white-space: nowrap;
+}
+.auth-nav .nav-back {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.auth-nav .nav-back:hover { color: var(--text); }
+
+/* === Main Content === */
+.deposit-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px 24px 80px;
+}
+.deposit-card {
+  width: 100%;
+  max-width: var(--max-w);
+}
+.deposit-card h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+.deposit-card .deposit-sub {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+}
+
+/* === Form === */
+.form-group {
+  margin-bottom: 20px;
+}
+.form-group label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.form-group select,
+.form-group input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: var(--font);
+  transition: border-color 0.2s;
+  outline: none;
+}
+.form-group select:focus,
+.form-group input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold-light);
+}
+.form-group select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a9e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+/* === Address Display === */
+.address-box {
+  background: var(--gold-light);
+  border: 1px solid var(--gold-mid);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.address-box .qr-placeholder {
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 16px;
+  background: #fff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80px;
+  line-height: 1;
+  color: #1a1a2e;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+@media (prefers-color-scheme: dark) {
+  .address-box .qr-placeholder {
+    background: #1a1a2e;
+    color: #fff;
+  }
+}
+.address-box .addr-label {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.address-box .addr-value {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text);
+  word-break: break-all;
+  background: var(--card-bg);
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  margin-bottom: 12px;
+  text-align: left;
+}
+.btn-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border: 1.5px solid var(--gold);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font);
+}
+.btn-copy:hover {
+  background: var(--gold);
+  color: #fff;
+}
+.btn-copy.copied {
+  background: #10B981;
+  border-color: #10B981;
+  color: #fff;
+}
+
+/* === Info Notice === */
+.info-notice {
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: rgba(59,130,246,0.06);
+  border: 1px solid rgba(59,130,246,0.15);
+  margin-bottom: 20px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.info-notice strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* === Alert === */
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  display: none;
+}
+.alert.show { display: block; }
+.alert-error {
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  color: #ef4444;
+}
+
+/* === Responsive === */
+@media (max-width: 480px) {
+  .deposit-wrapper { padding: 16px 16px 60px; }
+  .address-box .qr-placeholder { width: 120px; height: 120px; font-size: 60px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Simple Nav -->
+<nav class="auth-nav">
+  <a href="index.html" class="logo-link">
+    <span class="logo-main"><span class="c-gold">C</span><span class="y-gold">Y</span>RO</span>
+    <span class="logo-tagline">Back to home</span>
+  </a>
+  <a href="index.html" class="nav-back">← Back</a>
+</nav>
+
+<!-- Main Content -->
+<div class="deposit-wrapper">
+  <div class="deposit-card">
+    <h1>Deposit</h1>
+    <p class="deposit-sub">Select a token and network to generate a deposit address.</p>
+
+    <div class="alert alert-error" id="alertBox"></div>
+
+    <form id="depositForm" novalidate>
+      <div class="form-group">
+        <label for="token">Token</label>
+        <select id="token">
+          <option value="USDT">USDT</option>
+          <option value="USDC">USDC</option>
+          <option value="CYRO">CYRO</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="network">Network</label>
+        <select id="network">
+          <option value="Ethereum">Ethereum (ERC-20)</option>
+          <option value="Solana">Solana</option>
+          <option value="BNB Chain">BNB Chain (BEP-20)</option>
+          <option value="Base">Base</option>
+          <option value="Tron">Tron (TRC-20)</option>
+        </select>
+      </div>
+    </form>
+
+    <!-- Deposit Address -->
+    <div class="address-box" id="addressBox">
+      <div class="qr-placeholder">⟐</div>
+      <div class="addr-label">Deposit Address</div>
+      <div class="addr-value" id="addrValue">Select token and network to generate address</div>
+      <button class="btn-copy" id="copyBtn">📋 Copy Address</button>
+    </div>
+
+    <div class="info-notice" id="infoNotice">
+      <strong>⚠ Important</strong><br>
+      Send only <span id="noticeToken">USDT</span> on <span id="noticeNetwork">Ethereum (ERC-20)</span> to this address.
+      Minimum deposit: <span id="noticeMin">10 USDT</span>. Sending other tokens or using the wrong network may result in permanent loss of funds.
+    </div>
+  </div>
+</div>
+
+<script>
+// Mock deposit addresses per token+network
+const ADDRESSES = {
+  'USDT': {
+    'Ethereum':  '0x1a2B3c4D5e6F7890AbCdEf1234567890AbCdEf12',
+    'Solana':    '7Y3xG8QpL2mNvK5jR9tW1zB4cD6fH8iJ0kL2nP4q',
+    'BNB Chain': '0x3e4F5a6B7c8D9e0F1a2B3c4D5e6F7a8B9c0D1e2',
+    'Base':      '0x5f6A7b8C9d0E1f2A3b4C5d6E7f8A9b0C1d2E3f4',
+    'Tron':      'TXYZabcDEF1234567890abcdef1234567890abcd'
+  },
+  'USDC': {
+    'Ethereum':  '0x2b3C4d5E6f7890AbCdEf1234567890AbCdEf1234',
+    'Solana':    '8Z4yH9rQm3NoW6kS0tX2aB5cE7gI9jK1lM3oP5r',
+    'BNB Chain': '0x4f5A6b7C8d9E0f1A2b3C4d5E6f7A8b9C0d1E2f3',
+    'Base':      '0x6g7H8i9J0k1L2m3N4o5P6q7R8s9T0u1V2w3X4y5',
+    'Tron':      'TUVWxy7890123456789abcdef0123456789abcd'
+  },
+  'CYRO': {
+    'Ethereum':  '0x3c4D5e6F7890AbCdEf1234567890AbCdEf123456',
+    'Solana':    '9A5zI0sRn4PpX7lT1uY3bC6dF8hJ0kL2mN4oP6q',
+    'BNB Chain': '0x5a6B7c8D9e0F1a2B3c4D5e6F7a8B9c0D1e2F3a4',
+    'Base':      '0x7h8I9j0K1l2M3n4O5p6Q7r8S9t0U1v2W3x4Y5z6',
+    'Tron':      'TABCDEfghijklmnopqrstuvwxyz0123456789abcd'
+  }
+};
+
+const MIN_DEPOSITS = {
+  'USDT': 10,
+  'USDC': 10,
+  'CYRO': 50
+};
+
+const tokenSelect = document.getElementById('token');
+const networkSelect = document.getElementById('network');
+const addrValue = document.getElementById('addrValue');
+const copyBtn = document.getElementById('copyBtn');
+const noticeToken = document.getElementById('noticeToken');
+const noticeNetwork = document.getElementById('noticeNetwork');
+const noticeMin = document.getElementById('noticeMin');
+const alertBox = document.getElementById('alertBox');
+
+function updateAddress() {
+  const token = tokenSelect.value;
+  const network = networkSelect.value;
+  const addr = ADDRESSES[token]?.[network];
+
+  if (addr) {
+    addrValue.textContent = addr;
+    noticeToken.textContent = token;
+    noticeNetwork.textContent = networkSelect.options[networkSelect.selectedIndex].text;
+    noticeMin.textContent = `${MIN_DEPOSITS[token]} ${token}`;
+    copyBtn.classList.remove('copied');
+    copyBtn.innerHTML = '📋 Copy Address';
+    alertBox.classList.remove('show');
+  } else {
+    addrValue.textContent = 'Address not available for this combination';
+    copyBtn.innerHTML = '📋 Copy Address';
+  }
+}
+
+tokenSelect.addEventListener('change', updateAddress);
+networkSelect.addEventListener('change', updateAddress);
+
+// Copy address
+copyBtn.addEventListener('click', async function() {
+  const addr = addrValue.textContent;
+  if (!addr || addr.includes('not available')) return;
+
+  try {
+    await navigator.clipboard.writeText(addr);
+    this.innerHTML = '✅ Copied!';
+    this.classList.add('copied');
+    setTimeout(() => {
+      this.innerHTML = '📋 Copy Address';
+      this.classList.remove('copied');
+    }, 2000);
+  } catch {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = addr;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    this.innerHTML = '✅ Copied!';
+    this.classList.add('copied');
+    setTimeout(() => {
+      this.innerHTML = '📋 Copy Address';
+      this.classList.remove('copied');
+    }, 2000);
+  }
+});
+
+// Init
+updateAddress();
+
+// Auth guard — redirect to signin if not logged in
+(function() {
+  const user = JSON.parse(localStorage.getItem('cyro_user') || 'null');
+  if (!user) {
+    window.location.href = 'signin.html?redirect=deposit.html';
+  }
+})();
+</script>
+
+</body>
+</html>

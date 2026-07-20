@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Withdraw — CYRO</title>
+<style>
+/* === Reset & Base === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --gold: #E59303;
+  --gold-light: rgba(229,147,3,0.08);
+  --gold-mid: rgba(229,147,3,0.18);
+  --bg: #ffffff;
+  --text: #1a1a2e;
+  --text-muted: #4a4a5e;
+  --text-light: #8a8a9e;
+  --border: #e4e4ec;
+  --card-bg: #ffffff;
+  --radius: 10px;
+  --max-w: 520px;
+  --font: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0b1a;
+    --text: #e8e8f0;
+    --text-muted: #a0a0b8;
+    --text-light: #6a6a80;
+    --border: #2a2a40;
+    --card-bg: #111128;
+    --gold-light: rgba(229,147,3,0.06);
+    --gold-mid: rgba(229,147,3,0.12);
+  }
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* === Simple Nav === */
+.auth-nav {
+  padding: 20px 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.auth-nav a.logo-link {
+  text-decoration: none;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  position: relative;
+}
+.auth-nav .logo-main {
+  font-size: 20px; font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--text);
+}
+.auth-nav .logo-main .c-gold { color: var(--gold); }
+.auth-nav .logo-main .y-gold { color: var(--gold); }
+.auth-nav .logo-tagline {
+  display: block;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-light);
+  position: absolute;
+  bottom: -13px;
+  left: 0;
+  white-space: nowrap;
+}
+.auth-nav .nav-back {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.auth-nav .nav-back:hover { color: var(--text); }
+
+/* === Main Content === */
+.withdraw-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px 24px 80px;
+}
+.withdraw-card {
+  width: 100%;
+  max-width: var(--max-w);
+}
+.withdraw-card h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+.withdraw-card .withdraw-sub {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+}
+
+/* === Form === */
+.form-group {
+  margin-bottom: 20px;
+}
+.form-group label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.form-group select,
+.form-group input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: var(--font);
+  transition: border-color 0.2s;
+  outline: none;
+}
+.form-group select:focus,
+.form-group input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold-light);
+}
+.form-group select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a9e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+/* === Amount Row === */
+.amount-row {
+  display: flex;
+  gap: 10px;
+}
+.amount-row select {
+  width: 130px;
+  flex-shrink: 0;
+}
+.amount-row input {
+  flex: 1;
+}
+.btn-max {
+  padding: 11px 16px;
+  border: 1.5px solid var(--gold);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-max:hover {
+  background: var(--gold);
+  color: #fff;
+}
+
+/* === Balance Row === */
+.balance-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  padding: 0 2px;
+}
+.balance-row .bal-value {
+  color: var(--text);
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+/* === Summary === */
+.summary-box {
+  background: var(--gold-light);
+  border: 1px solid var(--gold-mid);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  padding: 6px 0;
+}
+.summary-row .sum-label {
+  color: var(--text-muted);
+}
+.summary-row .sum-value {
+  color: var(--text);
+  font-weight: 600;
+}
+.summary-divider {
+  height: 1px;
+  background: var(--gold-mid);
+  margin: 6px 0;
+}
+.summary-row.total .sum-label,
+.summary-row.total .sum-value {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+/* === Submit Button === */
+.btn-submit {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: 8px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  font-family: var(--font);
+}
+.btn-submit:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* === Alert === */
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  display: none;
+}
+.alert.show { display: block; }
+.alert-error {
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  color: #ef4444;
+}
+.alert-success {
+  background: rgba(16,185,129,0.08);
+  border: 1px solid rgba(16,185,129,0.2);
+  color: #10B981;
+}
+
+/* === Responsive === */
+@media (max-width: 500px) {
+  .withdraw-wrapper { padding: 16px 16px 60px; }
+  .amount-row { flex-wrap: wrap; }
+  .amount-row select { width: 100%; }
+  .btn-max { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- Simple Nav -->
+<nav class="auth-nav">
+  <a href="index.html" class="logo-link">
+    <span class="logo-main"><span class="c-gold">C</span><span class="y-gold">Y</span>RO</span>
+    <span class="logo-tagline">Back to home</span>
+  </a>
+  <a href="index.html" class="nav-back">← Back</a>
+</nav>
+
+<!-- Main Content -->
+<div class="withdraw-wrapper">
+  <div class="withdraw-card">
+    <h1>Withdraw</h1>
+    <p class="withdraw-sub">Send crypto from your CYRO account to an external wallet.</p>
+
+    <div class="alert alert-error" id="alertBox"></div>
+    <div class="alert alert-success" id="successBox">Withdrawal request submitted successfully!</div>
+
+    <form id="withdrawForm" novalidate>
+      <div class="form-group">
+        <label for="network">Network</label>
+        <select id="network">
+          <option value="Solana">Solana</option>
+          <option value="Ethereum">Ethereum (ERC-20)</option>
+          <option value="BNB Chain">BNB Chain (BEP-20)</option>
+          <option value="Base">Base</option>
+          <option value="Tron">Tron (TRC-20)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="address">Receiving Address</label>
+        <input type="text" id="address" placeholder="Enter the recipient's wallet address" autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label>Amount</label>
+        <div class="amount-row">
+          <select id="token">
+            <option value="USDT">USDT</option>
+            <option value="USDC">USDC</option>
+            <option value="CYRO">CYRO</option>
+          </select>
+          <input type="text" id="amount" placeholder="0.00" inputmode="decimal">
+          <button type="button" class="btn-max" id="maxBtn">Max</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="balance-row">
+      <span>Available Balance</span>
+      <span class="bal-value" id="balanceDisplay">—</span>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-box">
+      <div class="summary-row">
+        <span class="sum-label">You send</span>
+        <span class="sum-value" id="sumSend">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="sum-label">Network Fee</span>
+        <span class="sum-value" id="sumFee">—</span>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-row total">
+        <span class="sum-label">You receive</span>
+        <span class="sum-value" id="sumReceive">—</span>
+      </div>
+    </div>
+
+    <button class="btn-submit" id="submitBtn" disabled>Withdraw</button>
+  </div>
+</div>
+
+<script>
+// Mock balances per token
+const BALANCES = {
+  USDT: 1250.42,
+  USDC: 832.15,
+  CYRO: 5200.00
+};
+
+// Mock network fees per token (flat fee)
+const FEES = {
+  'USDT-Solana': 0.50,
+  'USDT-Ethereum': 3.20,
+  'USDT-BNB Chain': 0.30,
+  'USDT-Base': 0.40,
+  'USDT-Tron': 1.00,
+  'USDC-Solana': 0.50,
+  'USDC-Ethereum': 3.20,
+  'USDC-BNB Chain': 0.30,
+  'USDC-Base': 0.40,
+  'USDC-Tron': 1.00,
+  'CYRO-Solana': 2.00,
+  'CYRO-Ethereum': 8.00,
+  'CYRO-BNB Chain': 1.50,
+  'CYRO-Base': 1.80,
+  'CYRO-Tron': 5.00
+};
+
+const tokenSelect = document.getElementById('token');
+const networkSelect = document.getElementById('network');
+const addrInput = document.getElementById('address');
+const amountInput = document.getElementById('amount');
+const balanceDisplay = document.getElementById('balanceDisplay');
+const sumSend = document.getElementById('sumSend');
+const sumFee = document.getElementById('sumFee');
+const sumReceive = document.getElementById('sumReceive');
+const submitBtn = document.getElementById('submitBtn');
+const alertBox = document.getElementById('alertBox');
+const successBox = document.getElementById('successBox');
+const maxBtn = document.getElementById('maxBtn');
+const form = document.getElementById('withdrawForm');
+
+function getFee() {
+  const token = tokenSelect.value;
+  const network = networkSelect.value;
+  const key = `${token}-${network}`;
+  return FEES[key] || 0;
+}
+
+function getBalance() {
+  return BALANCES[tokenSelect.value] || 0;
+}
+
+function updateSummary() {
+  const token = tokenSelect.value;
+  const balance = getBalance();
+  const fee = getFee();
+  const amount = parseFloat(amountInput.value) || 0;
+
+  balanceDisplay.textContent = `${balance.toLocaleString()} ${token}`;
+
+  if (amount > 0) {
+    sumSend.textContent = `${amount.toFixed(2)} ${token}`;
+    sumFee.textContent = `${fee.toFixed(2)} ${token}`;
+    sumReceive.textContent = `${Math.max(0, amount - fee).toFixed(2)} ${token}`;
+  } else {
+    sumSend.textContent = '—';
+    sumFee.textContent = '—';
+    sumReceive.textContent = '—';
+  }
+
+  validateForm();
+}
+
+function validateForm() {
+  const addr = addrInput.value.trim();
+  const amount = parseFloat(amountInput.value);
+  const balance = getBalance();
+  const fee = getFee();
+
+  let valid = true;
+  let errors = [];
+
+  if (!addr || addr.length < 20) {
+    valid = false;
+    errors.push('Please enter a valid receiving address');
+  }
+
+  if (!amount || amount <= 0) {
+    valid = false;
+    errors.push('Please enter a valid amount');
+  } else if (amount > balance) {
+    valid = false;
+    errors.push(`Insufficient balance. Available: ${balance.toFixed(2)} ${tokenSelect.value}`);
+  } else if (amount <= fee) {
+    valid = false;
+    errors.push('Amount must exceed the network fee');
+  }
+
+  submitBtn.disabled = !valid;
+
+  if (errors.length > 0) {
+    alertBox.textContent = errors.join('. ');
+    alertBox.classList.add('show');
+    successBox.classList.remove('show');
+  } else {
+    alertBox.classList.remove('show');
+    successBox.classList.remove('show');
+  }
+
+  return valid;
+}
+
+tokenSelect.addEventListener('change', () => {
+  updateSummary();
+  amountInput.value = '';
+  updateSummary();
+});
+networkSelect.addEventListener('change', updateSummary);
+addrInput.addEventListener('input', updateSummary);
+amountInput.addEventListener('input', updateSummary);
+
+// Max button
+maxBtn.addEventListener('click', () => {
+  const balance = getBalance();
+  const fee = getFee();
+  const max = Math.max(0, balance - fee);
+  if (max > 0) {
+    amountInput.value = max.toFixed(2);
+    updateSummary();
+  }
+});
+
+// Submit
+form.addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (!validateForm()) return;
+
+  const token = tokenSelect.value;
+  const network = networkSelect.value;
+  const amount = parseFloat(amountInput.value);
+  const fee = getFee();
+  const receive = amount - fee;
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Processing...';
+
+  setTimeout(() => {
+    alertBox.classList.remove('show');
+    successBox.textContent = `Withdrawal request submitted! ${receive.toFixed(2)} ${token} will be sent to your address on ${network}.`;
+    successBox.classList.add('show');
+    submitBtn.textContent = 'Withdraw';
+    submitBtn.disabled = false;
+    amountInput.value = '';
+    addrInput.value = '';
+    updateSummary();
+  }, 1500);
+});
+
+// Init
+updateSummary();
+
+// Auth guard — redirect to signin if not logged in
+(function() {
+  const user = JSON.parse(localStorage.getItem('cyro_user') || 'null');
+  if (!user) {
+    window.location.href = 'signin.html?redirect=withdraw.html';
+  }
+})();
+</script>
+
+</body>
+</html>

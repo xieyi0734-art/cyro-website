@@ -151,6 +151,21 @@ nav .nav-signin:hover { color: var(--text); }
   border-color: var(--text);
   color: var(--text);
 }
+.nav-action-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text);
+  background: var(--gold-light);
+  border: 1px solid var(--gold-mid);
+  transition: all 0.2s;
+}
+.nav-action-btn:hover {
+  background: var(--gold-mid);
+  border-color: var(--gold);
+}
 .mobile-toggle { display: none; flex-direction: column; gap: 4px; cursor: pointer; background: none; border: none; padding: 4px; }
 .mobile-toggle span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: 0.2s; }
 
@@ -811,6 +826,8 @@ footer {
       <a href="signin.html" class="nav-signin" id="navSigninBtn">Sign In</a>
       <a href="signup.html" class="nav-cta" id="navCtaBtn">Get Started</a>
       <div class="nav-user" id="navUser" style="display:none">
+        <a href="deposit.html" class="nav-action-btn" id="navDepositBtn">Deposit</a>
+        <a href="withdraw.html" class="nav-action-btn" id="navWithdrawBtn">Withdraw</a>
         <span class="nav-avatar" id="navAvatar"></span>
         <button class="nav-logout" id="navLogoutBtn">Sign Out</button>
       </div>
