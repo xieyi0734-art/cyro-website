@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transactions — CYRO</title>
+<style>
+/* === Reset & Base === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --gold: #E59303;
+  --gold-light: rgba(229,147,3,0.08);
+  --gold-mid: rgba(229,147,3,0.18);
+  --bg: #ffffff;
+  --text: #1a1a2e;
+  --text-muted: #4a4a5e;
+  --text-light: #8a8a9e;
+  --border: #e4e4ec;
+  --card-bg: #ffffff;
+  --green: #10B981;
+  --green-light: rgba(16,185,129,0.08);
+  --red: #ef4444;
+  --red-light: rgba(239,68,68,0.08);
+  --radius: 10px;
+  --max-w: 720px;
+  --font: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0b1a;
+    --text: #e8e8f0;
+    --text-muted: #a0a0b8;
+    --text-light: #6a6a80;
+    --border: #2a2a40;
+    --card-bg: #111128;
+    --gold-light: rgba(229,147,3,0.06);
+    --gold-mid: rgba(229,147,3,0.12);
+    --green-light: rgba(16,185,129,0.06);
+    --red-light: rgba(239,68,68,0.06);
+  }
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* === Simple Nav === */
+.auth-nav {
+  padding: 20px 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.auth-nav a.logo-link {
+  text-decoration: none;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  position: relative;
+}
+.auth-nav .logo-main {
+  font-size: 20px; font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--text);
+}
+.auth-nav .logo-main .c-gold { color: var(--gold); }
+.auth-nav .logo-main .y-gold { color: var(--gold); }
+.auth-nav .logo-tagline {
+  display: block;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-light);
+  position: absolute;
+  bottom: -13px;
+  left: 0;
+  white-space: nowrap;
+}
+.auth-nav .nav-back {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.auth-nav .nav-back:hover { color: var(--text); }
+
+/* === Main Content === */
+.tx-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px 24px 80px;
+}
+.tx-card {
+  width: 100%;
+  max-width: var(--max-w);
+}
+.tx-card h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+.tx-card .tx-sub {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+/* === Summary Tabs === */
+.tx-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.tx-summary .tx-stat {
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  text-align: center;
+}
+.tx-summary .tx-stat .tx-stat-num {
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+.tx-summary .tx-stat .tx-stat-label {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+.tx-summary .tx-stat.green-border { border-color: rgba(16,185,129,0.25); }
+.tx-summary .tx-stat.green-border .tx-stat-num { color: var(--green); }
+.tx-summary .tx-stat.gold-border { border-color: var(--gold-mid); }
+.tx-summary .tx-stat.gold-border .tx-stat-num { color: var(--gold); }
+
+/* === Filter Bar === */
+.tx-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.tx-filters .filter-btn {
+  padding: 7px 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+.tx-filters .filter-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.tx-filters .filter-btn.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #fff;
+}
+
+/* === Empty State === */
+.tx-empty {
+  text-align: center;
+  padding: 60px 20px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+}
+.tx-empty .tx-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  opacity: 0.3;
+}
+.tx-empty h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+}
+.tx-empty p {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-bottom: 20px;
+}
+.tx-empty .tx-empty-btn {
+  display: inline-block;
+  padding: 10px 24px;
+  border-radius: 8px;
+  background: var(--gold);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.tx-empty .tx-empty-btn:hover { opacity: 0.88; }
+
+/* === Transaction Items === */
+.tx-list { margin-bottom: 32px; }
+
+.tx-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  margin-bottom: 10px;
+  transition: border-color 0.15s;
+}
+.tx-item:hover { border-color: var(--gold-mid); }
+
+.tx-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.tx-icon.in { background: var(--green-light); color: var(--green); }
+.tx-icon.out { background: var(--red-light); color: var(--red); }
+
+.tx-info {
+  flex: 1;
+  min-width: 0;
+}
+.tx-info .tx-type {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.tx-info .tx-type .tx-type-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 4px;
+  margin-left: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.tx-info .tx-type .tx-type-badge.in-badge { background: var(--green-light); color: var(--green); }
+.tx-info .tx-type .tx-type-badge.out-badge { background: var(--red-light); color: var(--red); }
+.tx-info .tx-detail {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+.tx-info .tx-detail .tx-network {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.tx-amount {
+  text-align: right;
+  flex-shrink: 0;
+}
+.tx-amount .tx-amount-val {
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+.tx-amount .tx-amount-val.in { color: var(--green); }
+.tx-amount .tx-amount-val.out { color: var(--text); }
+.tx-amount .tx-cyro {
+  font-size: 0.75rem;
+  color: var(--green);
+  margin-top: 2px;
+}
+.tx-amount .tx-time {
+  font-size: 0.7rem;
+  color: var(--text-light);
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* === Clear All === */
+.tx-clear {
+  text-align: center;
+  margin-top: 16px;
+}
+.btn-clear {
+  padding: 8px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-light);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+.btn-clear:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* === Alert === */
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  display: none;
+}
+.alert.show { display: block; }
+.alert-error {
+  background: var(--red-light);
+  border: 1px solid rgba(239,68,68,0.2);
+  color: var(--red);
+}
+
+/* === Responsive === */
+@media (max-width: 500px) {
+  .tx-wrapper { padding: 16px 16px 60px; }
+  .tx-summary { grid-template-columns: 1fr; gap: 8px; }
+  .tx-item { flex-wrap: wrap; }
+  .tx-amount { width: 100%; text-align: left; padding-left: 54px; }
+}
+
+/* === Withdrawal styles (appended from deposit flow) === */
+.tx-icon.out { background: var(--red-light); color: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- Simple Nav -->
+<nav class="auth-nav">
+  <a href="index.html" class="logo-link">
+    <span class="logo-main"><span class="c-gold">C</span><span class="y-gold">Y</span>RO</span>
+    <span class="logo-tagline">Back to home</span>
+  </a>
+  <a href="index.html" class="nav-back">← Back to Dashboard</a>
+</nav>
+
+<!-- Main Content -->
+<div class="tx-wrapper">
+  <div class="tx-card">
+    <h1>Transactions</h1>
+    <p class="tx-sub">View your deposit and withdrawal history.</p>
+
+    <div class="alert alert-error" id="alertBox"></div>
+
+    <!-- Summary Stats -->
+    <div class="tx-summary">
+      <div class="tx-stat">
+        <div class="tx-stat-num" id="txTotalCount">0</div>
+        <div class="tx-stat-label">Total Transactions</div>
+      </div>
+      <div class="tx-stat green-border">
+        <div class="tx-stat-num" id="txDepositCount">0</div>
+        <div class="tx-stat-label">Deposits</div>
+      </div>
+      <div class="tx-stat gold-border">
+        <div class="tx-stat-num" id="txWithdrawCount">0</div>
+        <div class="tx-stat-label">Withdrawals</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="tx-filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="deposit">Deposits</button>
+      <button class="filter-btn" data-filter="withdraw">Withdrawals</button>
+    </div>
+
+    <!-- Transaction List -->
+    <div class="tx-list" id="txList"></div>
+
+    <!-- Empty State -->
+    <div class="tx-empty" id="txEmpty">
+      <div class="tx-empty-icon">↗</div>
+      <h3>No transactions yet</h3>
+      <p>Deposit funds or make a withdrawal to see your activity here.</p>
+      <a href="deposit.html" class="tx-empty-btn">Go to Deposit</a>
+    </div>
+
+    <!-- Clear All -->
+    <div class="tx-clear">
+      <button class="btn-clear" id="clearBtn">Clear All History</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =============================================
+// 1. Data Sources
+// =============================================
+
+// Deposits are stored in cyro_deposits (from deposit.html)
+function getDeposits() {
+  try {
+    return JSON.parse(localStorage.getItem('cyro_deposits') || '[]');
+  } catch { return []; }
+}
+
+// Withdrawals are stored in cyro_withdrawals (from withdraw.html)
+function getWithdrawals() {
+  try {
+    return JSON.parse(localStorage.getItem('cyro_withdrawals') || '[]');
+  } catch { return []; }
+}
+
+function saveWithdrawals(withdrawals) {
+  localStorage.setItem('cyro_withdrawals', JSON.stringify(withdrawals));
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+// =============================================
+// 2. Combined transaction list
+// =============================================
+
+function getAllTransactions() {
+  const deposits = getDeposits().map(d => ({
+    ...d,
+    _type: 'deposit',
+    _id: d.id || `dep-${d.time}`
+  }));
+  const withdrawals = getWithdrawals().map(w => ({
+    ...w,
+    _type: 'withdraw',
+    _id: w.id || `wd-${w.time}`
+  }));
+  // Merge and sort by time descending
+  const all = [...deposits, ...withdrawals];
+  all.sort((a, b) => (b.time || 0) - (a.time || 0));
+  return all;
+}
+
+// =============================================
+// 3. Retrieve withdrawals from localStorage
+// =============================================
+
+// Patch withdraw.html to also save withdrawals — fallback if not present
+function initWithdrawalRecords() {
+  // If withdraw.html saves to cyro_withdrawals, great.
+  // Otherwise provide a way to read from user balance changes.
+  // We'll rely on withdraw.html writing to cyro_withdrawals.
+}
+initWithdrawalRecords();
+
+// =============================================
+// 4. UI Rendering
+// =============================================
+
+let currentFilter = 'all';
+
+function renderTransactions() {
+  const all = getAllTransactions();
+  const list = document.getElementById('txList');
+  const empty = document.getElementById('txEmpty');
+  const alertBox = document.getElementById('alertBox');
+
+  // Summary
+  document.getElementById('txTotalCount').textContent = all.length;
+  document.getElementById('txDepositCount').textContent = all.filter(t => t._type === 'deposit').length;
+  document.getElementById('txWithdrawCount').textContent = all.filter(t => t._type === 'withdraw').length;
+
+  // Filter
+  const filtered = currentFilter === 'all' ? all : all.filter(t => t._type === currentFilter);
+
+  if (filtered.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  list.innerHTML = filtered.map(tx => {
+    const isDeposit = tx._type === 'deposit';
+    const amount = tx.amount || 0;
+    const cyroAmount = tx.cyroAmount || 0;
+    const token = tx.token || 'USDT';
+    const network = tx.network || '—';
+    const time = tx.time || Date.now();
+
+    return `
+      <div class="tx-item">
+        <div class="tx-icon ${isDeposit ? 'in' : 'out'}">${isDeposit ? '↓' : '↑'}</div>
+        <div class="tx-info">
+          <div class="tx-type">
+            ${isDeposit ? 'Deposit' : 'Withdraw'}
+            <span class="tx-type-badge ${isDeposit ? 'in-badge' : 'out-badge'}">${isDeposit ? 'IN' : 'OUT'}</span>
+          </div>
+          <div class="tx-detail">
+            ${amount.toLocaleString()} ${token}
+            <span class="tx-network">• ${network}</span>
+          </div>
+        </div>
+        <div class="tx-amount">
+          <div class="tx-amount-val ${isDeposit ? 'in' : 'out'}">
+            ${isDeposit ? '+' : '−'}${amount.toLocaleString()} ${token}
+          </div>
+          ${isDeposit ? `<div class="tx-cyro">+ ${cyroAmount.toLocaleString()} CYRO</div>` : ''}
+          <div class="tx-time">${formatTime(time)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// =============================================
+// 5. Filters
+// =============================================
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    currentFilter = this.dataset.filter;
+    renderTransactions();
+  });
+});
+
+// =============================================
+// 6. Clear All
+// =============================================
+
+document.getElementById('clearBtn').addEventListener('click', function() {
+  if (getAllTransactions().length === 0) return;
+
+  if (confirm('Clear all transaction history? This cannot be undone.')) {
+    localStorage.removeItem('cyro_deposits');
+    localStorage.removeItem('cyro_withdrawals');
+    renderTransactions();
+  }
+});
+
+// =============================================
+// 7. Init
+// =============================================
+
+renderTransactions();
+
+// Auth guard
+(function() {
+  const user = JSON.parse(localStorage.getItem('cyro_user') || 'null');
+  if (!user) {
+    window.location.href = 'signin.html?redirect=transactions.html';
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -92,6 +92,127 @@ nav .logo .logo-tagline {
   left: 0;
   white-space: nowrap;
 }
+
+/* === User Dropdown (hover avatar) === */
+.nav-user {
+  position: relative;
+}
+.nav-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.nav-avatar:hover { transform: scale(1.08); }
+.user-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 260px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  padding: 16px;
+  z-index: 200;
+}
+@media (prefers-color-scheme: dark) {
+  .user-dropdown { box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+}
+.nav-user:hover .user-dropdown { display: block; }
+.user-dropdown .ud-header {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.user-dropdown .ud-email {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-all;
+}
+.user-dropdown .ud-id {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  margin-top: 2px;
+  font-family: var(--font-mono);
+}
+.user-dropdown .ud-balance {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+.user-dropdown .ud-balance strong {
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+}
+.user-dropdown .ud-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0;
+}
+.user-dropdown .ud-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.user-dropdown .ud-link:hover {
+  background: var(--gold-light);
+}
+.user-dropdown .ud-link .ud-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.user-dropdown .ud-link .ud-icon.gold-bg { background: var(--gold-light); }
+.user-dropdown .ud-link .ud-icon.green-bg { background: var(--green-light); }
+.user-dropdown .ud-link .ud-icon.purple-bg { background: rgba(139,92,246,0.1); }
+.user-dropdown .ud-link .ud-sub {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  margin-top: 1px;
+}
+.user-dropdown .ud-action {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-light);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+.user-dropdown .ud-action:hover {
+  border-color: var(--text);
+  color: var(--text);
+}
 @media(max-width:480px){
   nav .logo .logo-tagline { display: none; }
 }
@@ -826,10 +947,37 @@ footer {
       <a href="signin.html" class="nav-signin" id="navSigninBtn">Sign In</a>
       <a href="signup.html" class="nav-cta" id="navCtaBtn">Get Started</a>
       <div class="nav-user" id="navUser" style="display:none">
-        <a href="deposit.html" class="nav-action-btn" id="navDepositBtn">Deposit</a>
-        <a href="withdraw.html" class="nav-action-btn" id="navWithdrawBtn">Withdraw</a>
-        <span class="nav-avatar" id="navAvatar"></span>
-        <button class="nav-logout" id="navLogoutBtn">Sign Out</button>
+        <span class="nav-avatar" id="navAvatar">U</span>
+        <div class="user-dropdown" id="userDropdown">
+          <div class="ud-header" id="udHeader">
+            <div class="ud-email" id="udEmail">user@example.com</div>
+            <div class="ud-id" id="udId">ID: CYR-xxxxx</div>
+            <div class="ud-balance">Total Assets: <strong id="udBalance">0 CYRO</strong></div>
+          </div>
+          <a href="deposit.html" class="ud-link">
+            <div class="ud-icon green-bg">↓</div>
+            <div>
+              <div>Deposit</div>
+              <div class="ud-sub">Add funds to your account</div>
+            </div>
+          </a>
+          <a href="withdraw.html" class="ud-link">
+            <div class="ud-icon gold-bg">↑</div>
+            <div>
+              <div>Withdraw</div>
+              <div class="ud-sub">Send funds to external wallet</div>
+            </div>
+          </a>
+          <a href="transactions.html" class="ud-link">
+            <div class="ud-icon purple-bg">↗</div>
+            <div>
+              <div>Transactions</div>
+              <div class="ud-sub">View deposit & withdrawal history</div>
+            </div>
+          </a>
+          <div class="ud-divider"></div>
+          <button class="ud-action" id="navLogoutBtn">Sign Out</button>
+        </div>
       </div>
     </div>
     <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
@@ -1367,11 +1515,20 @@ function updateNavForAuth() {
   const ctaBtn = document.getElementById('navCtaBtn');
   const userEl = document.getElementById('navUser');
   const avatarEl = document.getElementById('navAvatar');
+  const udEmail = document.getElementById('udEmail');
+  const udId = document.getElementById('udId');
+  const udBalance = document.getElementById('udBalance');
   if (user) {
     signinBtn.style.display = 'none';
     ctaBtn.style.display = 'none';
     userEl.style.display = 'flex';
-    avatarEl.textContent = user.email.charAt(0).toUpperCase();
+    const initial = user.email.charAt(0).toUpperCase();
+    avatarEl.textContent = initial;
+    // Dropdown content
+    udEmail.textContent = user.email;
+    udId.textContent = `ID: CYR-${(user.email || '').charCodeAt(0).toString(16).padStart(4,'0').toUpperCase()}${Math.random().toString(36).substring(2,6).toUpperCase()}`;
+    const cyroBalance = user.cyroBalance || 0;
+    udBalance.textContent = `${cyroBalance.toLocaleString()} CYRO`;
   } else {
     signinBtn.style.display = 'inline';
     ctaBtn.style.display = 'inline';
@@ -1380,7 +1537,9 @@ function updateNavForAuth() {
 }
 document.getElementById('navLogoutBtn')?.addEventListener('click', () => {
   localStorage.removeItem('cyro_user');
+  localStorage.removeItem('cyro_deposits');
   updateNavForAuth();
+  window.location.reload();
 });
 updateNavForAuth();
 

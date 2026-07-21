@@ -608,6 +608,20 @@ form.addEventListener('submit', function(e) {
       localStorage.setItem('cyro_user', JSON.stringify(user));
     }
 
+    // Save withdrawal record to localStorage
+    const withdrawals = JSON.parse(localStorage.getItem('cyro_withdrawals') || '[]');
+    withdrawals.unshift({
+      id: `wd-${Date.now()}-${Math.random().toString(36).substring(2,6)}`,
+      amount: receive,
+      cyroDeducted: cyroDeducted,
+      token: token,
+      network: network,
+      address: addrInput.value.trim(),
+      fee: fee,
+      time: Date.now()
+    });
+    localStorage.setItem('cyro_withdrawals', JSON.stringify(withdrawals));
+
     alertBox.classList.remove('show');
     successBox.textContent = `✅ Withdrawal submitted! ${receive.toFixed(2)} ${token} sent to your wallet on ${network}.`;
     successBox.classList.add('show');
