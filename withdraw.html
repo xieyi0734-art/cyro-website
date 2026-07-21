@@ -18,6 +18,8 @@
   --text-light: #8a8a9e;
   --border: #e4e4ec;
   --card-bg: #ffffff;
+  --green: #10B981;
+  --green-light: rgba(16,185,129,0.08);
   --radius: 10px;
   --max-w: 520px;
   --font: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -34,6 +36,7 @@
     --card-bg: #111128;
     --gold-light: rgba(229,147,3,0.06);
     --gold-mid: rgba(229,147,3,0.12);
+    --green-light: rgba(16,185,129,0.06);
   }
 }
 
@@ -193,13 +196,35 @@ body {
   justify-content: space-between;
   font-size: 0.82rem;
   color: var(--text-muted);
-  margin-bottom: 20px;
+  margin-bottom: 8px;
   padding: 0 2px;
 }
 .balance-row .bal-value {
   color: var(--text);
   font-weight: 600;
   font-family: var(--font-mono);
+}
+
+/* === Rate Display === */
+.rate-box {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--gold-light);
+  border: 1px solid var(--gold-mid);
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+}
+.rate-box .rate-title {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.rate-box .rate-value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text);
 }
 
 /* === Summary === */
@@ -267,9 +292,9 @@ body {
   color: #ef4444;
 }
 .alert-success {
-  background: rgba(16,185,129,0.08);
+  background: var(--green-light);
   border: 1px solid rgba(16,185,129,0.2);
-  color: #10B981;
+  color: var(--green);
 }
 
 /* === Responsive === */
@@ -299,7 +324,7 @@ body {
     <p class="withdraw-sub">Send crypto from your CYRO account to an external wallet.</p>
 
     <div class="alert alert-error" id="alertBox"></div>
-    <div class="alert alert-success" id="successBox">Withdrawal request submitted successfully!</div>
+    <div class="alert alert-success" id="successBox"></div>
 
     <form id="withdrawForm" novalidate>
       <div class="form-group">
@@ -332,16 +357,31 @@ body {
       </div>
     </form>
 
+    <!-- Balance -->
     <div class="balance-row">
-      <span>Available Balance</span>
-      <span class="bal-value" id="balanceDisplay">—</span>
+      <span>CYRO Balance</span>
+      <span class="bal-value" id="cyroBalanceDisplay">—</span>
+    </div>
+    <div class="balance-row" style="margin-bottom:20px">
+      <span style="font-size:0.78rem;color:var(--text-light)">Token available to withdraw</span>
+      <span class="bal-value" id="tokenBalanceDisplay" style="font-size:0.78rem">—</span>
+    </div>
+
+    <!-- Rate -->
+    <div class="rate-box" id="rateBox">
+      <div class="rate-title">Exchange Rate (Admin Configured)</div>
+      <div class="rate-value" id="rateValue">1 USDT = 10 CYRO</div>
     </div>
 
     <!-- Summary -->
     <div class="summary-box">
       <div class="summary-row">
-        <span class="sum-label">You send</span>
+        <span class="sum-label">You withdraw</span>
         <span class="sum-value" id="sumSend">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="sum-label">CYRO deducted</span>
+        <span class="sum-value" id="sumDeduct">—</span>
       </div>
       <div class="summary-row">
         <span class="sum-label">Network Fee</span>
@@ -359,14 +399,29 @@ body {
 </div>
 
 <script>
-// Mock balances per token
-const BALANCES = {
-  USDT: 1250.42,
-  USDC: 832.15,
-  CYRO: 5200.00
+// =============================================
+// 1. Admin-Configured Data
+// =============================================
+
+// Exchange rates: how much CYRO per 1 unit of token
+const RATES = {
+  USDT: 10,
+  USDC: 9.5,
+  CYRO: 1
 };
 
-// Mock network fees per token (flat fee)
+// Mock CYRO balance (initial = all rates applied from prior deposits)
+const INITIAL_CYRO_BALANCE = 8320.00;
+
+// Token balances derived from CYRO balance / rate
+function getTokenBalance(token) {
+  const user = JSON.parse(localStorage.getItem('cyro_user') || 'null');
+  const cyroBalance = user?.cyroBalance || INITIAL_CYRO_BALANCE;
+  const rate = RATES[token] || 1;
+  return cyroBalance / rate;
+}
+
+// Network fees per token+network (in the token)
 const FEES = {
   'USDT-Solana': 0.50,
   'USDT-Ethereum': 3.20,
@@ -385,12 +440,18 @@ const FEES = {
   'CYRO-Tron': 5.00
 };
 
+// =============================================
+// 2. DOM Refs
+// =============================================
+
 const tokenSelect = document.getElementById('token');
 const networkSelect = document.getElementById('network');
 const addrInput = document.getElementById('address');
 const amountInput = document.getElementById('amount');
-const balanceDisplay = document.getElementById('balanceDisplay');
+const cyroBalanceDisplay = document.getElementById('cyroBalanceDisplay');
+const tokenBalanceDisplay = document.getElementById('tokenBalanceDisplay');
 const sumSend = document.getElementById('sumSend');
+const sumDeduct = document.getElementById('sumDeduct');
 const sumFee = document.getElementById('sumFee');
 const sumReceive = document.getElementById('sumReceive');
 const submitBtn = document.getElementById('submitBtn');
@@ -398,6 +459,20 @@ const alertBox = document.getElementById('alertBox');
 const successBox = document.getElementById('successBox');
 const maxBtn = document.getElementById('maxBtn');
 const form = document.getElementById('withdrawForm');
+const rateValue = document.getElementById('rateValue');
+
+// =============================================
+// 3. Helpers
+// =============================================
+
+function getRate(token) {
+  return RATES[token] || 0;
+}
+
+function getCYROBalance() {
+  const user = JSON.parse(localStorage.getItem('cyro_user') || 'null');
+  return user?.cyroBalance || INITIAL_CYRO_BALANCE;
+}
 
 function getFee() {
   const token = tokenSelect.value;
@@ -406,24 +481,38 @@ function getFee() {
   return FEES[key] || 0;
 }
 
-function getBalance() {
-  return BALANCES[tokenSelect.value] || 0;
+function getTokenBalanceFor(token) {
+  return getCYROBalance() / (getRate(token) || 1);
 }
+
+// =============================================
+// 4. Update UI
+// =============================================
 
 function updateSummary() {
   const token = tokenSelect.value;
-  const balance = getBalance();
+  const rate = getRate(token);
+  const cyroBalance = getCYROBalance();
+  const tokenBalance = getTokenBalanceFor(token);
   const fee = getFee();
   const amount = parseFloat(amountInput.value) || 0;
 
-  balanceDisplay.textContent = `${balance.toLocaleString()} ${token}`;
+  // Balances
+  cyroBalanceDisplay.textContent = `${cyroBalance.toLocaleString()} CYRO`;
+  tokenBalanceDisplay.textContent = `${tokenBalance.toFixed(2)} ${token}`;
+
+  // Rate
+  rateValue.textContent = `1 ${token} = ${rate} CYRO`;
 
   if (amount > 0) {
+    const cyroDeducted = amount * rate;
     sumSend.textContent = `${amount.toFixed(2)} ${token}`;
+    sumDeduct.textContent = `− ${cyroDeducted.toLocaleString()} CYRO`;
     sumFee.textContent = `${fee.toFixed(2)} ${token}`;
     sumReceive.textContent = `${Math.max(0, amount - fee).toFixed(2)} ${token}`;
   } else {
     sumSend.textContent = '—';
+    sumDeduct.textContent = '—';
     sumFee.textContent = '—';
     sumReceive.textContent = '—';
   }
@@ -432,9 +521,10 @@ function updateSummary() {
 }
 
 function validateForm() {
+  const token = tokenSelect.value;
   const addr = addrInput.value.trim();
   const amount = parseFloat(amountInput.value);
-  const balance = getBalance();
+  const tokenBalance = getTokenBalanceFor(token);
   const fee = getFee();
 
   let valid = true;
@@ -448,9 +538,9 @@ function validateForm() {
   if (!amount || amount <= 0) {
     valid = false;
     errors.push('Please enter a valid amount');
-  } else if (amount > balance) {
+  } else if (amount > tokenBalance) {
     valid = false;
-    errors.push(`Insufficient balance. Available: ${balance.toFixed(2)} ${tokenSelect.value}`);
+    errors.push(`Insufficient balance. Available: ${tokenBalance.toFixed(2)} ${token} (${getCYROBalance().toLocaleString()} CYRO)`);
   } else if (amount <= fee) {
     valid = false;
     errors.push('Amount must exceed the network fee');
@@ -470,6 +560,10 @@ function validateForm() {
   return valid;
 }
 
+// =============================================
+// 5. Events
+// =============================================
+
 tokenSelect.addEventListener('change', () => {
   updateSummary();
   amountInput.value = '';
@@ -481,9 +575,9 @@ amountInput.addEventListener('input', updateSummary);
 
 // Max button
 maxBtn.addEventListener('click', () => {
-  const balance = getBalance();
+  const token = tokenSelect.value;
   const fee = getFee();
-  const max = Math.max(0, balance - fee);
+  const max = Math.max(0, getTokenBalanceFor(token) - fee);
   if (max > 0) {
     amountInput.value = max.toFixed(2);
     updateSummary();
@@ -500,13 +594,22 @@ form.addEventListener('submit', function(e) {
   const amount = parseFloat(amountInput.value);
   const fee = getFee();
   const receive = amount - fee;
+  const rate = getRate(token);
+  const cyroDeducted = amount * rate;
 
   submitBtn.disabled = true;
   submitBtn.textContent = 'Processing...';
 
   setTimeout(() => {
+    // Deduct CYRO from balance
+    const user = JSON.parse(localStorage.getItem('cyro_user') || 'null');
+    if (user) {
+      user.cyroBalance = Math.max(0, (user.cyroBalance || getCYROBalance()) - cyroDeducted);
+      localStorage.setItem('cyro_user', JSON.stringify(user));
+    }
+
     alertBox.classList.remove('show');
-    successBox.textContent = `Withdrawal request submitted! ${receive.toFixed(2)} ${token} will be sent to your address on ${network}.`;
+    successBox.textContent = `✅ Withdrawal submitted! ${receive.toFixed(2)} ${token} sent to your wallet on ${network}.`;
     successBox.classList.add('show');
     submitBtn.textContent = 'Withdraw';
     submitBtn.disabled = false;
@@ -516,10 +619,13 @@ form.addEventListener('submit', function(e) {
   }, 1500);
 });
 
-// Init
+// =============================================
+// 6. Init
+// =============================================
+
 updateSummary();
 
-// Auth guard — redirect to signin if not logged in
+// Auth guard
 (function() {
   const user = JSON.parse(localStorage.getItem('cyro_user') || 'null');
   if (!user) {

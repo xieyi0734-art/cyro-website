@@ -18,6 +18,8 @@
   --text-light: #8a8a9e;
   --border: #e4e4ec;
   --card-bg: #ffffff;
+  --green: #10B981;
+  --green-light: rgba(16,185,129,0.08);
   --radius: 10px;
   --max-w: 520px;
   --font: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -34,6 +36,7 @@
     --card-bg: #111128;
     --gold-light: rgba(229,147,3,0.06);
     --gold-mid: rgba(229,147,3,0.12);
+    --green-light: rgba(16,185,129,0.06);
   }
 }
 
@@ -224,9 +227,176 @@ body {
   color: #fff;
 }
 .btn-copy.copied {
-  background: #10B981;
-  border-color: #10B981;
+  background: var(--green);
+  border-color: var(--green);
   color: #fff;
+}
+
+/* === Rate Display === */
+.rate-box {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--gold-light);
+  border: 1px solid var(--gold-mid);
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+}
+.rate-box .rate-title {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.rate-box .rate-value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* === Conversion Preview === */
+.conversion-box {
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--green-light);
+  border: 1px solid rgba(16,185,129,0.2);
+  margin-bottom: 20px;
+  display: none;
+}
+.conversion-box.show { display: block; }
+.conversion-box .conv-title {
+  font-size: 0.72rem;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.conversion-box .conv-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  padding: 4px 0;
+}
+.conversion-box .conv-row .conv-label {
+  color: var(--text-muted);
+}
+.conversion-box .conv-row .conv-value {
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+.conversion-box .conv-arrow {
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--green);
+  padding: 4px 0;
+}
+
+/* === Deposit Simulation === */
+.simulate-section {
+  margin-bottom: 20px;
+  display: none;
+}
+.simulate-section.show { display: block; }
+.simulate-section .sim-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.simulate-section .sim-input-row {
+  display: flex;
+  gap: 8px;
+}
+.simulate-section .sim-input-row input {
+  flex: 1;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.simulate-section .sim-input-row input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold-light);
+}
+.btn-simulate {
+  padding: 11px 20px;
+  border: 1.5px solid var(--gold);
+  border-radius: 8px;
+  background: var(--gold);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font);
+  white-space: nowrap;
+}
+.btn-simulate:hover { opacity: 0.88; }
+.btn-simulate:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* === Activity Log === */
+.activity-log {
+  margin-bottom: 20px;
+}
+.activity-log .log-title {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.activity-log .log-empty {
+  font-size: 0.82rem;
+  color: var(--text-light);
+  padding: 16px;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+.activity-log .log-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--green-light);
+  border: 1px solid rgba(16,185,129,0.15);
+  margin-bottom: 8px;
+}
+.activity-log .log-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.activity-log .log-detail {
+  flex: 1;
+  min-width: 0;
+}
+.activity-log .log-detail .log-amount {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.activity-log .log-detail .log-cyro {
+  font-size: 0.8rem;
+  color: var(--green);
+}
+.activity-log .log-time {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  white-space: nowrap;
 }
 
 /* === Info Notice === */
@@ -259,11 +429,19 @@ body {
   border: 1px solid rgba(239,68,68,0.2);
   color: #ef4444;
 }
+.alert-success {
+  background: var(--green-light);
+  border: 1px solid rgba(16,185,129,0.2);
+  color: var(--green);
+}
 
 /* === Responsive === */
 @media (max-width: 480px) {
   .deposit-wrapper { padding: 16px 16px 60px; }
   .address-box .qr-placeholder { width: 120px; height: 120px; font-size: 60px; }
+  .simulate-section .sim-input-row { flex-wrap: wrap; }
+  .simulate-section .sim-input-row input { width: 100%; }
+  .btn-simulate { width: 100%; }
 }
 </style>
 </head>
@@ -285,6 +463,7 @@ body {
     <p class="deposit-sub">Select a token and network to generate a deposit address.</p>
 
     <div class="alert alert-error" id="alertBox"></div>
+    <div class="alert alert-success" id="successBox"></div>
 
     <form id="depositForm" novalidate>
       <div class="form-group">
@@ -308,12 +487,48 @@ body {
       </div>
     </form>
 
+    <!-- Rate Display -->
+    <div class="rate-box" id="rateBox">
+      <div class="rate-title">Exchange Rate (Admin Configured)</div>
+      <div class="rate-value" id="rateValue">1 USDT = 10 CYRO</div>
+    </div>
+
     <!-- Deposit Address -->
     <div class="address-box" id="addressBox">
       <div class="qr-placeholder">⟐</div>
       <div class="addr-label">Deposit Address</div>
       <div class="addr-value" id="addrValue">Select token and network to generate address</div>
       <button class="btn-copy" id="copyBtn">📋 Copy Address</button>
+    </div>
+
+    <!-- Conversion Preview -->
+    <div class="conversion-box" id="conversionBox">
+      <div class="conv-title">Auto-Conversion</div>
+      <div class="conv-row">
+        <span class="conv-label">Deposit amount</span>
+        <span class="conv-value" id="convFrom">—</span>
+      </div>
+      <div class="conv-arrow">↓</div>
+      <div class="conv-row">
+        <span class="conv-label">CYRO credited</span>
+        <span class="conv-value" id="convTo">—</span>
+      </div>
+    </div>
+
+    <!-- Simulate Deposit (for prototype demo) -->
+    <div class="simulate-section" id="simSection">
+      <div class="sim-label">🔧 Simulate Incoming Transfer</div>
+      <div class="sim-input-row">
+        <input type="text" id="simAmount" placeholder="Enter deposit amount (e.g. 100)" inputmode="decimal">
+        <button type="button" class="btn-simulate" id="simBtn">Confirm Received</button>
+      </div>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="activity-log">
+      <div class="log-title">Recent Deposits</div>
+      <div class="log-empty" id="logEmpty">No deposits yet. Send funds to the address above and they will appear here.</div>
+      <div id="logList"></div>
     </div>
 
     <div class="info-notice" id="infoNotice">
@@ -325,36 +540,53 @@ body {
 </div>
 
 <script>
-// Mock deposit addresses per token+network
+// =============================================
+// 1. Admin-Configured Data (后台配置)
+// =============================================
+
+// Deposit addresses per token+network
 const ADDRESSES = {
-  'USDT': {
-    'Ethereum':  '0x1a2B3c4D5e6F7890AbCdEf1234567890AbCdEf12',
-    'Solana':    '7Y3xG8QpL2mNvK5jR9tW1zB4cD6fH8iJ0kL2nP4q',
+  USDT: {
+    Ethereum:  '0x1a2B3c4D5e6F7890AbCdEf1234567890AbCdEf12',
+    Solana:    '7Y3xG8QpL2mNvK5jR9tW1zB4cD6fH8iJ0kL2nP4q',
     'BNB Chain': '0x3e4F5a6B7c8D9e0F1a2B3c4D5e6F7a8B9c0D1e2',
-    'Base':      '0x5f6A7b8C9d0E1f2A3b4C5d6E7f8A9b0C1d2E3f4',
-    'Tron':      'TXYZabcDEF1234567890abcdef1234567890abcd'
+    Base:      '0x5f6A7b8C9d0E1f2A3b4C5d6E7f8A9b0C1d2E3f4',
+    Tron:      'TXYZabcDEF1234567890abcdef1234567890abcd'
   },
-  'USDC': {
-    'Ethereum':  '0x2b3C4d5E6f7890AbCdEf1234567890AbCdEf1234',
-    'Solana':    '8Z4yH9rQm3NoW6kS0tX2aB5cE7gI9jK1lM3oP5r',
+  USDC: {
+    Ethereum:  '0x2b3C4d5E6f7890AbCdEf1234567890AbCdEf1234',
+    Solana:    '8Z4yH9rQm3NoW6kS0tX2aB5cE7gI9jK1lM3oP5r',
     'BNB Chain': '0x4f5A6b7C8d9E0f1A2b3C4d5E6f7A8b9C0d1E2f3',
-    'Base':      '0x6g7H8i9J0k1L2m3N4o5P6q7R8s9T0u1V2w3X4y5',
-    'Tron':      'TUVWxy7890123456789abcdef0123456789abcd'
+    Base:      '0x6g7H8i9J0k1L2m3N4o5P6q7R8s9T0u1V2w3X4y5',
+    Tron:      'TUVWxy7890123456789abcdef0123456789abcd'
   },
-  'CYRO': {
-    'Ethereum':  '0x3c4D5e6F7890AbCdEf1234567890AbCdEf123456',
-    'Solana':    '9A5zI0sRn4PpX7lT1uY3bC6dF8hJ0kL2mN4oP6q',
+  CYRO: {
+    Ethereum:  '0x3c4D5e6F7890AbCdEf1234567890AbCdEf123456',
+    Solana:    '9A5zI0sRn4PpX7lT1uY3bC6dF8hJ0kL2mN4oP6q',
     'BNB Chain': '0x5a6B7c8D9e0F1a2B3c4D5e6F7a8B9c0D1e2F3a4',
-    'Base':      '0x7h8I9j0K1l2M3n4O5p6Q7r8S9t0U1v2W3x4Y5z6',
-    'Tron':      'TABCDEfghijklmnopqrstuvwxyz0123456789abcd'
+    Base:      '0x7h8I9j0K1l2M3n4O5p6Q7r8S9t0U1v2W3x4Y5z6',
+    Tron:      'TABCDEfghijklmnopqrstuvwxyz0123456789abcd'
   }
 };
 
-const MIN_DEPOSITS = {
-  'USDT': 10,
-  'USDC': 10,
-  'CYRO': 50
+// Admin-configured exchange rates: how much CYRO you get per 1 unit of token
+// 后台管理员配置的汇率：每个 token 可兑换多少 CYRO
+const RATES = {
+  USDT: 10,    // 1 USDT = 10 CYRO
+  USDC: 9.5,   // 1 USDC = 9.5 CYRO
+  CYRO: 1      // 1 CYRO = 1 CYRO
 };
+
+// Minimum deposit amounts per token
+const MIN_DEPOSITS = {
+  USDT: 10,
+  USDC: 10,
+  CYRO: 50
+};
+
+// =============================================
+// 2. DOM Refs
+// =============================================
 
 const tokenSelect = document.getElementById('token');
 const networkSelect = document.getElementById('network');
@@ -364,28 +596,156 @@ const noticeToken = document.getElementById('noticeToken');
 const noticeNetwork = document.getElementById('noticeNetwork');
 const noticeMin = document.getElementById('noticeMin');
 const alertBox = document.getElementById('alertBox');
+const successBox = document.getElementById('successBox');
+const rateValue = document.getElementById('rateValue');
+const conversionBox = document.getElementById('conversionBox');
+const convFrom = document.getElementById('convFrom');
+const convTo = document.getElementById('convTo');
+const simSection = document.getElementById('simSection');
+const simAmount = document.getElementById('simAmount');
+const simBtn = document.getElementById('simBtn');
+const logEmpty = document.getElementById('logEmpty');
+const logList = document.getElementById('logList');
+
+// =============================================
+// 3. Helper Functions
+// =============================================
+
+function getRate(token) {
+  return RATES[token] || 0;
+}
+
+function getMinDeposit(token) {
+  return MIN_DEPOSITS[token] || 0;
+}
+
+function convertToCYRO(token, amount) {
+  const rate = getRate(token);
+  return amount * rate;
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+// =============================================
+// 4. Deposit History (persisted in localStorage)
+// =============================================
+
+function getDeposits() {
+  try {
+    return JSON.parse(localStorage.getItem('cyro_deposits') || '[]');
+  } catch { return []; }
+}
+
+function saveDeposits(deposits) {
+  localStorage.setItem('cyro_deposits', JSON.stringify(deposits));
+}
+
+function addDeposit(token, network, amount) {
+  const cyroAmount = convertToCYRO(token, amount);
+  const deposit = {
+    id: Date.now().toString(36),
+    token,
+    network,
+    amount,
+    cyroAmount,
+    time: Date.now(),
+    txid: '0x' + Math.random().toString(36).substring(2, 12) + '...' + Math.random().toString(36).substring(2, 6)
+  };
+  const deposits = getDeposits();
+  deposits.unshift(deposit);
+  saveDeposits(deposits);
+
+  // Update CYRO balance in user profile
+  updateCYROBalance(cyroAmount);
+
+  return deposit;
+}
+
+function updateCYROBalance(addedCyro) {
+  const user = JSON.parse(localStorage.getItem('cyro_user') || 'null');
+  if (user) {
+    user.cyroBalance = (user.cyroBalance || 0) + addedCyro;
+    localStorage.setItem('cyro_user', JSON.stringify(user));
+  }
+}
+
+function getCYROBalance() {
+  const user = JSON.parse(localStorage.getItem('cyro_user') || 'null');
+  return user?.cyroBalance || 0;
+}
+
+function renderDeposits() {
+  const deposits = getDeposits();
+  logList.innerHTML = '';
+
+  if (deposits.length === 0) {
+    logEmpty.style.display = 'block';
+    return;
+  }
+  logEmpty.style.display = 'none';
+
+  deposits.forEach(d => {
+    const item = document.createElement('div');
+    item.className = 'log-item';
+    item.innerHTML = `
+      <div class="log-icon">✓</div>
+      <div class="log-detail">
+        <div class="log-amount">${d.amount.toLocaleString()} ${d.token}</div>
+        <div class="log-cyro">+ ${d.cyroAmount.toLocaleString()} CYRO credited (rate: 1 ${d.token} = ${getRate(d.token)} CYRO)</div>
+        <div style="font-size:0.75rem;color:var(--text-light);margin-top:2px">${d.network} • TX: ${d.txid}</div>
+      </div>
+      <div class="log-time">${formatTime(d.time)}</div>
+    `;
+    logList.appendChild(item);
+  });
+}
+
+// =============================================
+// 5. Update UI on token/network change
+// =============================================
 
 function updateAddress() {
   const token = tokenSelect.value;
   const network = networkSelect.value;
   const addr = ADDRESSES[token]?.[network];
 
+  // Update address display
   if (addr) {
     addrValue.textContent = addr;
     noticeToken.textContent = token;
     noticeNetwork.textContent = networkSelect.options[networkSelect.selectedIndex].text;
-    noticeMin.textContent = `${MIN_DEPOSITS[token]} ${token}`;
+    noticeMin.textContent = `${getMinDeposit(token)} ${token}`;
     copyBtn.classList.remove('copied');
     copyBtn.innerHTML = '📋 Copy Address';
-    alertBox.classList.remove('show');
   } else {
     addrValue.textContent = 'Address not available for this combination';
     copyBtn.innerHTML = '📋 Copy Address';
   }
-}
 
-tokenSelect.addEventListener('change', updateAddress);
-networkSelect.addEventListener('change', updateAddress);
+  // Update rate display
+  const rate = getRate(token);
+  rateValue.textContent = `1 ${token} = ${rate} CYRO`;
+
+  // Update conversion preview
+  convFrom.textContent = `—`;
+  convTo.textContent = `—`;
+  conversionBox.classList.remove('show');
+
+  // Show simulation section when address is valid
+  if (addr) {
+    simSection.classList.add('show');
+    simAmount.placeholder = `Enter ${token} amount (min ${getMinDeposit(token)})`;
+  } else {
+    simSection.classList.remove('show');
+  }
+
+  // Clear any alerts
+  alertBox.classList.remove('show');
+  successBox.classList.remove('show');
+}
 
 // Copy address
 copyBtn.addEventListener('click', async function() {
@@ -401,7 +761,6 @@ copyBtn.addEventListener('click', async function() {
       this.classList.remove('copied');
     }, 2000);
   } catch {
-    // Fallback
     const ta = document.createElement('textarea');
     ta.value = addr;
     document.body.appendChild(ta);
@@ -417,10 +776,89 @@ copyBtn.addEventListener('click', async function() {
   }
 });
 
-// Init
-updateAddress();
+tokenSelect.addEventListener('change', updateAddress);
+networkSelect.addEventListener('change', updateAddress);
 
-// Auth guard — redirect to signin if not logged in
+// =============================================
+// 6. Amount input → live conversion preview
+// =============================================
+
+simAmount.addEventListener('input', function() {
+  const token = tokenSelect.value;
+  const val = parseFloat(this.value);
+
+  if (val > 0) {
+    const cyro = convertToCYRO(token, val);
+    convFrom.textContent = `${val.toLocaleString()} ${token}`;
+    convTo.textContent = `+ ${cyro.toLocaleString()} CYRO`;
+    conversionBox.classList.add('show');
+  } else {
+    convFrom.textContent = `—`;
+    convTo.textContent = `—`;
+    conversionBox.classList.remove('show');
+  }
+});
+
+// =============================================
+// 7. Simulate receiving deposit (原型演示用)
+// =============================================
+
+simBtn.addEventListener('click', function() {
+  const token = tokenSelect.value;
+  const network = networkSelect.value;
+  const amount = parseFloat(simAmount.value);
+  const minDeposit = getMinDeposit(token);
+
+  // Validate
+  if (!amount || amount <= 0) {
+    alertBox.textContent = 'Please enter a valid deposit amount.';
+    alertBox.classList.add('show');
+    successBox.classList.remove('show');
+    return;
+  }
+
+  if (amount < minDeposit) {
+    alertBox.textContent = `Minimum deposit is ${minDeposit} ${token}.`;
+    alertBox.classList.add('show');
+    successBox.classList.remove('show');
+    return;
+  }
+
+  // Simulate blockchain confirmation
+  this.disabled = true;
+  this.textContent = 'Confirming...';
+
+  setTimeout(() => {
+    const deposit = addDeposit(token, network, amount);
+
+    // Show success
+    successBox.textContent = `✅ Deposit confirmed! ${amount} ${token} received → ${deposit.cyroAmount.toLocaleString()} CYRO credited to your account.`;
+    successBox.classList.add('show');
+    alertBox.classList.remove('show');
+
+    // Update conversion display
+    convFrom.textContent = `${amount.toLocaleString()} ${token}`;
+    convTo.textContent = `+ ${deposit.cyroAmount.toLocaleString()} CYRO`;
+    conversionBox.classList.add('show');
+
+    // Re-render activity log
+    renderDeposits();
+
+    // Reset
+    this.disabled = false;
+    this.textContent = 'Confirm Received';
+    simAmount.value = '';
+  }, 1500);
+});
+
+// =============================================
+// 8. Init
+// =============================================
+
+updateAddress();
+renderDeposits();
+
+// Auth guard
 (function() {
   const user = JSON.parse(localStorage.getItem('cyro_user') || 'null');
   if (!user) {

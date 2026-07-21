@@ -454,7 +454,8 @@ document.getElementById('googleSignupBtn')?.addEventListener('click', function(e
     const domains = ['gmail.com', 'googlemail.com'];
     const user = {
       email: `user.${Math.random().toString(36).substring(2, 6)}@${domains[Math.floor(Math.random() * domains.length)]}`,
-      authMethod: 'google'
+      authMethod: 'google',
+      cyroBalance: 0
     };
     localStorage.setItem('cyro_user', JSON.stringify(user));
     window.location.href = 'index.html';
@@ -587,7 +588,7 @@ form.addEventListener('submit', function(e) {
   alertBox.classList.remove('show', 'alert-error', 'alert-success');
 
   setTimeout(() => {
-    const user = { email: emailInput.value.trim(), authMethod: 'email' };
+    const user = { email: emailInput.value.trim(), authMethod: 'email', cyroBalance: 0 };
     localStorage.setItem('cyro_user', JSON.stringify(user));
     window.location.href = 'index.html';
   }, 1000);
