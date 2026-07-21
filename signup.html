@@ -201,7 +201,37 @@ body {
 .btn-submit:hover { opacity: 0.88; transform: translateY(-1px); }
 .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-/* === Divider === */
+/* === Captcha === */
+.captcha-row {
+  display: flex;
+  gap: 8px;
+}
+.captcha-row input {
+  flex: 1;
+}
+.btn-captcha {
+  flex-shrink: 0;
+  padding: 12px 16px;
+  border: 1.5px solid var(--gold);
+  border-radius: 8px;
+  background: var(--gold-light);
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font);
+  white-space: nowrap;
+}
+.btn-captcha:hover { background: var(--gold-mid); }
+.btn-captcha:disabled { opacity: 0.4; cursor: not-allowed; }
+.captcha-hint {
+  font-size: 0.78rem;
+  color: #10B981;
+  margin-top: 4px;
+  display: none;
+}
+.captcha-hint.show { display: block; }
 .divider {
   display: flex;
   align-items: center;
@@ -353,6 +383,16 @@ body {
           <button type="button" class="pw-toggle" id="confirmToggle" aria-label="Toggle password visibility">Show</button>
         </div>
         <div class="form-error" id="confirmError">Passwords do not match.</div>
+      </div>
+
+      <div class="form-group" id="captchaGroup" style="display:none">
+        <label for="captcha">Verification code</label>
+        <div class="captcha-row">
+          <input type="text" id="captcha" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+          <button type="button" class="btn-captcha" id="captchaBtn">Send Code</button>
+        </div>
+        <div class="form-error" id="captchaError">Please enter the verification code.</div>
+        <div class="captcha-hint" id="captchaHint">A verification code has been sent to your email.</div>
       </div>
 
       <button type="submit" class="btn-submit" id="submitBtn">Create Account</button>
@@ -518,6 +558,29 @@ form.addEventListener('submit', function(e) {
 
   if (!valid) return;
 
+  // Always require captcha — show it on first submit
+  const captchaGroup = document.getElementById('captchaGroup');
+  const captchaInput = document.getElementById('captcha');
+  const captchaError = document.getElementById('captchaError');
+  const captchaBtn = document.getElementById('captchaBtn');
+
+  if (captchaGroup.style.display === 'none') {
+    // First click: show captcha & send code
+    captchaGroup.style.display = 'block';
+    sendCaptcha();
+    return;
+  }
+
+  // Second click: validate captcha
+  if (!captchaInput.value.trim() || captchaInput.value.length < 6) {
+    captchaInput.classList.add('input-error');
+    captchaError.textContent = 'Please enter the 6-digit verification code.';
+    captchaError.classList.add('show');
+    return;
+  }
+  captchaInput.classList.remove('input-error');
+  captchaError.classList.remove('show');
+
   // Simulate account creation
   submitBtn.disabled = true;
   submitBtn.textContent = 'Creating account...';
@@ -528,6 +591,46 @@ form.addEventListener('submit', function(e) {
     localStorage.setItem('cyro_user', JSON.stringify(user));
     window.location.href = 'index.html';
   }, 1000);
+});
+
+// === Captcha logic ===
+let captchaTimer = null;
+let captchaCountdown = 60;
+
+function sendCaptcha() {
+  const btn = document.getElementById('captchaBtn');
+  const hint = document.getElementById('captchaHint');
+  const captchaInput = document.getElementById('captcha');
+
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  setTimeout(() => {
+    hint.classList.add('show');
+    captchaInput.focus();
+    startCaptchaTimer(btn);
+  }, 800);
+}
+
+function startCaptchaTimer(btn) {
+  captchaCountdown = 60;
+  btn.textContent = `Resend (${captchaCountdown}s)`;
+  if (captchaTimer) clearInterval(captchaTimer);
+  captchaTimer = setInterval(() => {
+    captchaCountdown--;
+    btn.textContent = `Resend (${captchaCountdown}s)`;
+    if (captchaCountdown <= 0) {
+      clearInterval(captchaTimer);
+      captchaTimer = null;
+      btn.textContent = 'Resend';
+      btn.disabled = false;
+    }
+  }, 1000);
+}
+
+document.getElementById('captchaBtn')?.addEventListener('click', function() {
+  if (this.disabled) return;
+  sendCaptcha();
 });
 </script>
 
