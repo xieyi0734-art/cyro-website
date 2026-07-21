@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Management — CYRO Admin</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#E59303;--gold-light:rgba(229,147,3,0.08);--gold-mid:rgba(229,147,3,0.15);
+  --bg:#0b0b1a;--text:#e8e8f0;--text-muted:#a0a0b8;--text-light:#6a6a80;
+  --border:#2a2a40;--card-bg:#111128;--radius:8px;
+  --font:-apple-system,'Inter','Segoe UI',sans-serif;--font-mono:'SF Mono','Fira Code',monospace;
+  --side-w:220px;
+}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;min-height:100vh;line-height:1.5}
+/* Sidebar */
+.sidebar{
+  width:var(--side-w);background:var(--card-bg);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:0;position:fixed;top:0;left:0;bottom:0;z-index:10;
+}
+.sidebar .logo{
+  padding:20px 20px 16px;border-bottom:1px solid var(--border);
+  font-size:18px;font-weight:700;letter-spacing:1px;display:flex;align-items:center;gap:8px;
+}
+.sidebar .logo .g{color:var(--gold)}
+.sidebar .logo .sub{font-size:9px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:1.5px;margin-left:4px}
+.sidebar nav{padding:12px 0;flex:1}
+.sidebar nav a{
+  display:flex;align-items:center;gap:10px;padding:10px 20px;text-decoration:none;
+  color:var(--text-muted);font-size:14px;transition:all 0.15s;border-left:3px solid transparent;
+}
+.sidebar nav a:hover{color:var(--text);background:var(--gold-light)}
+.sidebar nav a.active{color:var(--gold);background:var(--gold-light);border-left-color:var(--gold);font-weight:600}
+.sidebar nav a .ico{width:18px;text-align:center;font-size:15px}
+/* Main */
+.main{margin-left:var(--side-w);flex:1;padding:32px;max-width:1200px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+.header h1{font-size:22px;font-weight:700}
+.header h1 span{color:var(--gold)}
+.header .stats{display:flex;gap:20px;font-size:13px;color:var(--text-muted)}
+.header .stats b{color:var(--text);font-size:15px}
+/* Toolbar */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.toolbar .left{display:flex;gap:8px;align-items:center}
+.toolbar .left input{
+  background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:8px 12px;color:var(--text);font-size:13px;width:220px;outline:none;transition:border 0.15s;
+}
+.toolbar .left input:focus{border-color:var(--gold)}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius);
+  font-size:13px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all 0.15s;text-decoration:none;
+}
+.btn-primary{background:var(--gold);color:#000;border-color:var(--gold)}
+.btn-primary:hover{opacity:0.88}
+.btn-outline{background:transparent;color:var(--text-muted);border-color:var(--border)}
+.btn-outline:hover{color:var(--text);border-color:var(--gold)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:#dc2626;color:#fff;border-color:#dc2626}
+.btn-danger:hover{opacity:0.85}
+.btn-success{background:#16a34a;color:#fff;border-color:#16a34a}
+.btn-success:hover{opacity:0.85}
+/* Table */
+.table-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:rgba(229,147,3,0.04)}
+th{padding:12px 16px;text-align:left;font-weight:600;color:var(--text-muted);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)}
+td{padding:12px 16px;border-bottom:1px solid rgba(42,42,64,0.5);color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(229,147,3,0.02)}
+td .id-mono{font-family:var(--font-mono);font-size:12px;color:var(--text-light)}
+td .status-badge{
+  display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:100px;
+  font-size:11px;font-weight:600;
+}
+.status-badge.active{background:rgba(22,163,74,0.12);color:#4ade80}
+.status-badge.suspended{background:rgba(220,38,38,0.12);color:#f87171}
+td .actions{display:flex;gap:4px}
+/* Modal */
+.modal-overlay{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);
+  z-index:1000;align-items:center;justify-content:center;
+}
+.modal-overlay.show{display:flex}
+.modal{
+  background:var(--card-bg);border:1px solid var(--border);border-radius:12px;
+  padding:28px;width:420px;max-width:90vw;max-height:85vh;overflow-y:auto;
+}
+.modal h2{font-size:17px;margin-bottom:20px}
+.modal h2 span{color:var(--gold)}
+.modal label{display:block;font-size:13px;color:var(--text-muted);margin-bottom:4px;margin-top:14px}
+.modal label:first-of-type{margin-top:0}
+.modal input,.modal select{
+  width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:9px 12px;color:var(--text);font-size:13px;outline:none;
+}
+.modal input:focus,.modal select:focus{border-color:var(--gold)}
+.modal .btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;background:#16a34a;color:#fff;padding:12px 20px;
+  border-radius:var(--radius);font-size:13px;font-weight:600;z-index:2000;
+  opacity:0;transform:translateY(12px);transition:all 0.3s;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.error{background:#dc2626}
+/* Empty */
+.empty{text-align:center;padding:48px 20px;color:var(--text-light);font-size:14px}
+.empty .ico{font-size:36px;margin-bottom:12px;opacity:0.4}
+/* Responsive */
+@media(max-width:768px){
+  .sidebar{width:56px}
+  .sidebar .logo span,.sidebar nav a span{display:none}
+  .sidebar nav a{padding:10px 18px;justify-content:center}
+  .sidebar nav a .ico{font-size:18px}
+  .sidebar .logo{padding:16px;justify-content:center}
+  .sidebar .logo .sub{display:none}
+  .main{margin-left:56px;padding:20px 14px}
+  .header{flex-direction:column;align-items:flex-start;gap:10px}
+  .toolbar{flex-direction:column;align-items:stretch}
+  .toolbar .left input{width:100%}
+  table{font-size:12px}
+  th,td{padding:10px 10px}
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="logo">
+    <span class="g">CY</span>RO<span class="sub">Admin</span>
+  </div>
+  <nav>
+    <a href="admin.html" class=""><span class="ico">◉</span><span>Dashboard</span></a>
+    <a href="admin-users.html" class="active"><span class="ico">◎</span><span>Users</span></a>
+    <a href="admin-transactions.html"><span class="ico">↔</span><span>Transactions</span></a>
+    <a href="admin-rates.html"><span class="ico">%</span><span>Token Rates</span></a>
+    <a href="admin-chains.html"><span class="ico">⛓</span><span>Networks</span></a>
+  </nav>
+  <div style="padding:16px 20px;border-top:1px solid var(--border);font-size:12px;color:var(--text-light)">
+    <a href="index.html" style="color:var(--text-muted);text-decoration:none">← Back to site</a>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main" id="app">
+  <div class="header">
+    <div>
+      <h1><span>User</span> Management</h1>
+      <div class="stats" style="margin-top:4px">
+        <span>Total: <b id="totalUsers">0</b></span>
+        <span>Active: <b id="activeUsers">0</b></span>
+        <span>Suspended: <b id="suspendedUsers">0</b></span>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="openAddModal()">+ Add User</button>
+  </div>
+
+  <div class="toolbar">
+    <div class="left">
+      <input type="text" id="searchInput" placeholder="Search email or user ID..." oninput="renderTable()">
+      <select id="statusFilter" onchange="renderTable()" style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;color:var(--text);font-size:13px;outline:none">
+        <option value="all">All Status</option>
+        <option value="active">Active</option>
+        <option value="suspended">Suspended</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>User ID</th>
+          <th>Email</th>
+          <th>CYRO Balance</th>
+          <th>Registered</th>
+          <th>Status</th>
+          <th style="text-align:right">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="userTableBody">
+      </tbody>
+    </table>
+    <div class="empty" id="emptyState" style="display:none">
+      <div class="ico">◎</div>
+      <div>No users found</div>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h2><span>Add</span> User</h2>
+    <label>Email</label>
+    <input type="email" id="addEmail" placeholder="user@example.com">
+    <label>Password (temporary)</label>
+    <input type="text" id="addPassword" placeholder="TempPass123!">
+    <label>Initial CYRO Balance</label>
+    <input type="number" id="addBalance" value="0" min="0" step="100">
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="addUser()">Create User</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================
+// Data
+// =============================================
+function getUsers() {
+  return JSON.parse(localStorage.getItem('cyro_users') || '[]');
+}
+function saveUsers(users) {
+  localStorage.setItem('cyro_users', JSON.stringify(users));
+}
+function getDeposits() {
+  return JSON.parse(localStorage.getItem('cyro_deposits') || '[]');
+}
+
+// Seed demo users if empty
+function seedUsers() {
+  let users = getUsers();
+  if (users.length === 0) {
+    users = [
+      { id: 'USR-00001', email: 'alice@example.com', password: 'Demo123!', cyroBalance: 8320.00, registered: '2026-03-15 09:23', status: 'active' },
+      { id: 'USR-00002', email: 'bob@test.io', password: 'Demo123!', cyroBalance: 2500.00, registered: '2026-04-02 14:10', status: 'active' },
+      { id: 'USR-00003', email: 'carol@demo.org', password: 'Demo123!', cyroBalance: 150.00, registered: '2026-05-20 11:45', status: 'suspended' },
+      { id: 'USR-00004', email: 'xieyi0734@gmail.com', password: 'xy123456.', cyroBalance: 12350.00, registered: '2026-06-01 08:00', status: 'active' },
+    ];
+    saveUsers(users);
+  }
+  updateStats();
+}
+
+function getNextId() {
+  const users = getUsers();
+  const max = users.reduce((m, u) => {
+    const n = parseInt(u.id.replace('USR-',''), 10);
+    return n > m ? n : m;
+  }, 0);
+  return 'USR-' + String(max + 1).padStart(5, '0');
+}
+
+// =============================================
+// Render
+// =============================================
+function renderTable() {
+  const users = getUsers();
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const filter = document.getElementById('statusFilter').value;
+
+  let filtered = users.filter(u => {
+    if (filter !== 'all' && u.status !== filter) return false;
+    if (search && !u.email.toLowerCase().includes(search) && !u.id.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('userTableBody');
+  const empty = document.getElementById('emptyState');
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map(u => `
+    <tr>
+      <td><span class="id-mono">${u.id}</span></td>
+      <td>${u.email}</td>
+      <td><b>${u.cyroBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</b> CYRO</td>
+      <td style="color:var(--text-light);font-size:12px">${u.registered}</td>
+      <td><span class="status-badge ${u.status}">${u.status === 'active' ? '● Active' : '● Suspended'}</span></td>
+      <td style="text-align:right">
+        <div class="actions" style="justify-content:flex-end">
+          ${u.status === 'active'
+            ? `<button class="btn btn-sm btn-outline" onclick="toggleUser('${u.id}')">Suspend</button>`
+            : `<button class="btn btn-sm btn-success" onclick="toggleUser('${u.id}')">Activate</button>`
+          }
+          <button class="btn btn-sm btn-outline" onclick="editBalance('${u.id}')">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function updateStats() {
+  const users = getUsers();
+  document.getElementById('totalUsers').textContent = users.length;
+  document.getElementById('activeUsers').textContent = users.filter(u => u.status === 'active').length;
+  document.getElementById('suspendedUsers').textContent = users.filter(u => u.status === 'suspended').length;
+}
+
+// =============================================
+// Actions
+// =============================================
+function openAddModal() {
+  document.getElementById('addModal').classList.add('show');
+  document.getElementById('addEmail').value = '';
+  document.getElementById('addPassword').value = 'Temp' + Math.random().toString(36).slice(2,8) + '!';
+  document.getElementById('addBalance').value = 0;
+}
+function closeAddModal() {
+  document.getElementById('addModal').classList.remove('show');
+}
+function addUser() {
+  const email = document.getElementById('addEmail').value.trim();
+  const password = document.getElementById('addPassword').value.trim();
+  const balance = parseFloat(document.getElementById('addBalance').value) || 0;
+  if (!email || !password) { showToast('Please fill in email and password', true); return; }
+  if (!email.includes('@')) { showToast('Invalid email address', true); return; }
+
+  const users = getUsers();
+  if (users.find(u => u.email === email)) { showToast('Email already exists', true); return; }
+
+  const now = new Date();
+  const registered = now.getFullYear() + '-' +
+    String(now.getMonth()+1).padStart(2,'0') + '-' +
+    String(now.getDate()).padStart(2,'0') + ' ' +
+    String(now.getHours()).padStart(2,'0') + ':' +
+    String(now.getMinutes()).padStart(2,'0');
+
+  users.push({
+    id: getNextId(),
+    email: email,
+    password: password,
+    cyroBalance: balance,
+    registered: registered,
+    status: 'active'
+  });
+
+  // Also sync to cyro_user if it's the first user
+  const existingUser = JSON.parse(localStorage.getItem('cyro_user') || 'null');
+  if (!existingUser && users.length === 1) {
+    localStorage.setItem('cyro_user', JSON.stringify({
+      email: email,
+      password: password,
+      cyroBalance: balance
+    }));
+  }
+
+  saveUsers(users);
+  closeAddModal();
+  renderTable();
+  updateStats();
+  showToast(`User ${email} created`);
+}
+
+function toggleUser(id) {
+  const users = getUsers();
+  const u = users.find(x => x.id === id);
+  if (!u) return;
+  u.status = u.status === 'active' ? 'suspended' : 'active';
+  saveUsers(users);
+  renderTable();
+  updateStats();
+  showToast(`${u.email} ${u.status === 'active' ? 'activated' : 'suspended'}`);
+}
+
+function editBalance(id) {
+  const users = getUsers();
+  const u = users.find(x => x.id === id);
+  if (!u) return;
+  const newBalance = prompt(`Edit CYRO balance for ${u.email}`, u.cyroBalance);
+  if (newBalance === null) return;
+  const bal = parseFloat(newBalance);
+  if (isNaN(bal) || bal < 0) { showToast('Invalid balance', true); return; }
+  u.cyroBalance = bal;
+  saveUsers(users);
+  renderTable();
+  showToast(`${u.email} balance updated to ${bal.toLocaleString()} CYRO`);
+}
+
+function deleteUser(id) {
+  const users = getUsers();
+  const u = users.find(x => x.id === id);
+  if (!u) return;
+  if (!confirm(`Delete user ${u.email}? This cannot be undone.`)) return;
+  const filtered = users.filter(x => x.id !== id);
+  saveUsers(filtered);
+  renderTable();
+  updateStats();
+  showToast(`${u.email} deleted`);
+}
+
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// =============================================
+// Init
+// =============================================
+seedUsers();
+renderTable();
+</script>
+</body>
+</html>

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Networks — CYRO Admin</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#E59303;--gold-light:rgba(229,147,3,0.08);--gold-mid:rgba(229,147,3,0.15);
+  --bg:#0b0b1a;--text:#e8e8f0;--text-muted:#a0a0b8;--text-light:#6a6a80;
+  --border:#2a2a40;--card-bg:#111128;--radius:8px;
+  --font:-apple-system,'Inter','Segoe UI',sans-serif;
+  --font-mono:'SF Mono','Fira Code',monospace;
+  --side-w:220px;
+}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;min-height:100vh;line-height:1.5}
+.sidebar{
+  width:var(--side-w);background:var(--card-bg);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10;
+}
+.sidebar .logo{
+  padding:20px 20px 16px;border-bottom:1px solid var(--border);
+  font-size:18px;font-weight:700;letter-spacing:1px;display:flex;align-items:center;gap:8px;
+}
+.sidebar .logo .g{color:var(--gold)}
+.sidebar .logo .sub{font-size:9px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:1.5px;margin-left:4px}
+.sidebar nav{padding:12px 0;flex:1}
+.sidebar nav a{
+  display:flex;align-items:center;gap:10px;padding:10px 20px;text-decoration:none;
+  color:var(--text-muted);font-size:14px;transition:all 0.15s;border-left:3px solid transparent;
+}
+.sidebar nav a:hover{color:var(--text);background:var(--gold-light)}
+.sidebar nav a.active{color:var(--gold);background:var(--gold-light);border-left-color:var(--gold);font-weight:600}
+.sidebar nav a .ico{width:18px;text-align:center;font-size:15px}
+.sidebar .back-link{padding:16px 20px;border-top:1px solid var(--border);font-size:12px}
+.sidebar .back-link a{color:var(--text-muted);text-decoration:none}
+.sidebar .back-link a:hover{color:var(--gold)}
+.main{margin-left:var(--side-w);flex:1;padding:32px;max-width:1200px}
+.header{margin-bottom:28px}
+.header h1{font-size:22px;font-weight:700}
+.header h1 span{color:var(--gold)}
+.header .sub{font-size:13px;color:var(--text-muted);margin-top:4px}
+/* Accordion */
+.accordion{margin-bottom:16px}
+.accordion-item{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.accordion-header{
+  display:flex;justify-content:space-between;align-items:center;padding:16px 20px;
+  cursor:pointer;transition:background 0.15s;
+}
+.accordion-header:hover{background:var(--gold-light)}
+.accordion-header .left{display:flex;align-items:center;gap:12px}
+.accordion-header .chain-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff}
+.accordion-header .chain-info h3{font-size:15px;font-weight:700}
+.accordion-header .chain-info .network-count{font-size:12px;color:var(--text-muted)}
+.accordion-header .arrow{color:var(--text-light);font-size:12px;transition:transform 0.2s}
+.accordion-item.open .accordion-header .arrow{transform:rotate(180deg)}
+.accordion-body{display:none;padding:0 20px 20px}
+.accordion-item.open .accordion-body{display:block}
+/* Network cards inside */
+.network-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px}
+.network-card:last-child{margin-bottom:0}
+.network-card .nc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.network-card .nc-header .nc-name{font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px}
+.network-card .nc-header .nc-indicator{width:8px;height:8px;border-radius:50%;display:inline-block}
+.nc-indicator.active{background:#4ade80}
+.nc-indicator.inactive{background:var(--text-light)}
+.network-card .nc-field{margin-bottom:8px}
+.network-card .nc-field label{display:block;font-size:11px;color:var(--text-light);margin-bottom:2px;text-transform:uppercase;letter-spacing:0.3px}
+.network-card .nc-field .nc-value{
+  font-family:var(--font-mono);font-size:12px;color:var(--text);word-break:break-all;
+  background:var(--card-bg);padding:6px 10px;border-radius:var(--radius);border:1px solid var(--border);
+}
+.network-card .nc-field input{
+  width:100%;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:7px 10px;color:var(--text);font-size:12px;font-family:var(--font-mono);outline:none;
+}
+.network-card .nc-field input:focus{border-color:var(--gold)}
+.network-card .nc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.network-card .nc-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);
+  font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all 0.15s;
+}
+.btn-primary{background:var(--gold);color:#000}
+.btn-primary:hover{opacity:0.88}
+.btn-outline{background:transparent;color:var(--text-muted);border:1px solid var(--border)}
+.btn-outline:hover{color:var(--text);border-color:var(--gold)}
+.btn-sm{padding:4px 8px;font-size:11px}
+.btn-success{background:#16a34a;color:#fff}
+.btn-success:hover{opacity:0.85}
+.btn-danger{background:#dc2626;color:#fff}
+.btn-danger:hover{opacity:0.85}
+/* Toolbar */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;background:#16a34a;color:#fff;padding:12px 20px;
+  border-radius:var(--radius);font-size:13px;font-weight:600;z-index:2000;
+  opacity:0;transform:translateY(12px);transition:all 0.3s;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.error{background:#dc2626}
+/* Responsive */
+@media(max-width:768px){
+  .sidebar{width:56px}
+  .sidebar .logo span,.sidebar nav a span{display:none}
+  .sidebar nav a{padding:10px 18px;justify-content:center}
+  .sidebar nav a .ico{font-size:18px}
+  .sidebar .logo{padding:16px;justify-content:center}
+  .sidebar .logo .sub{display:none}
+  .sidebar .back-link{display:none}
+  .main{margin-left:56px;padding:20px 14px}
+  .network-card .nc-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="logo"><span class="g">CY</span>RO<span class="sub">Admin</span></div>
+  <nav>
+    <a href="admin.html"><span class="ico">◉</span><span>Dashboard</span></a>
+    <a href="admin-users.html"><span class="ico">◎</span><span>Users</span></a>
+    <a href="admin-transactions.html"><span class="ico">↔</span><span>Transactions</span></a>
+    <a href="admin-rates.html"><span class="ico">%</span><span>Token Rates</span></a>
+    <a href="admin-chains.html" class="active"><span class="ico">⛓</span><span>Networks</span></a>
+  </nav>
+  <div class="back-link"><a href="index.html">← Back to site</a></div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <div class="header">
+    <h1><span>Network & Chain</span> Settings</h1>
+    <div class="sub">Manage supported chains, deposit addresses, network fees, and toggle networks on/off.</div>
+  </div>
+
+  <div class="toolbar">
+    <div></div>
+    <button class="btn btn-primary" onclick="addNetwork()">+ Add Network</button>
+  </div>
+
+  <div class="accordion" id="chainAccordion"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================
+// Data — mirroring deposit.html ADDRESSES + withdraw.html FEES
+// =============================================
+const CHAIN_COLORS = {
+  'Ethereum': '#627eea',
+  'Solana': '#9945ff',
+  'BNB Chain': '#f0b90b',
+  'Base': '#0052ff',
+  'Tron': '#ef0027'
+};
+
+function getConfig() {
+  return JSON.parse(localStorage.getItem('cyro_chain_config') || JSON.stringify({
+    chains: [
+      { id: 'Ethereum', label: 'Ethereum', active: true, icon: 'ETH',
+        networks: [
+          { token: 'USDT', address: '0x1a2B3c4D5e6F7890AbCdEf1234567890AbCdEf12', fee: 3.20, active: true },
+          { token: 'USDC', address: '0x2b3C4d5E6f7890AbCdEf1234567890AbCdEf1234', fee: 3.20, active: true },
+          { token: 'CYRO', address: '0x3c4D5e6F7890AbCdEf1234567890AbCdEf123456', fee: 8.00, active: true }
+        ]
+      },
+      { id: 'Solana', label: 'Solana', active: true, icon: 'SOL',
+        networks: [
+          { token: 'USDT', address: '7Y3xG8QpL2mNvK5jR9tW1zB4cD6fH8iJ0kL2nP4q', fee: 0.50, active: true },
+          { token: 'USDC', address: '8Z4yH9rQm3NoW6kS0tX2aB5cE7gI9jK1lM3oP5r', fee: 0.50, active: true },
+          { token: 'CYRO', address: '9A5zI0sRn4PpX7lT1uY3bC6dF8hJ0kL2mN4oP6q', fee: 2.00, active: true }
+        ]
+      },
+      { id: 'BNB Chain', label: 'BNB Chain', active: true, icon: 'BNB',
+        networks: [
+          { token: 'USDT', address: '0x3e4F5a6B7c8D9e0F1a2B3c4D5e6F7a8B9c0D1e2', fee: 0.30, active: true },
+          { token: 'USDC', address: '0x4f5A6b7C8d9E0f1A2b3C4d5E6f7A8b9C0d1E2f3', fee: 0.30, active: true },
+          { token: 'CYRO', address: '0x5a6B7c8D9e0F1a2B3c4D5e6F7a8B9c0D1e2F3a4', fee: 1.50, active: true }
+        ]
+      },
+      { id: 'Base', label: 'Base', active: true, icon: 'BASE',
+        networks: [
+          { token: 'USDT', address: '0x5f6A7b8C9d0E1f2A3b4C5d6E7f8A9b0C1d2E3f4', fee: 0.40, active: true },
+          { token: 'USDC', address: '0x6g7H8i9J0k1L2m3N4o5P6q7R8s9T0u1V2w3X4y5', fee: 0.40, active: true },
+          { token: 'CYRO', address: '0x7h8I9j0K1l2M3n4O5p6Q7r8S9t0U1v2W3x4Y5z6', fee: 1.80, active: true }
+        ]
+      },
+      { id: 'Tron', label: 'Tron', active: true, icon: 'TRX',
+        networks: [
+          { token: 'USDT', address: 'TXYZabcDEF1234567890abcdef1234567890abcd', fee: 1.00, active: true },
+          { token: 'USDC', address: 'TUVWxy7890123456789abcdef0123456789abcd', fee: 1.00, active: true },
+          { token: 'CYRO', address: 'TABCDEfghijklmnopqrstuvwxyz0123456789abcd', fee: 5.00, active: true }
+        ]
+      }
+    ]
+  }));
+}
+
+function saveConfig(cfg) {
+  localStorage.setItem('cyro_chain_config', JSON.stringify(cfg));
+}
+
+// Sync to legacy format used by deposit.html / withdraw.html
+function syncToLegacy(cfg) {
+  const addresses = {};
+  const fees = {};
+  const tokens = [];
+
+  cfg.chains.forEach(chain => {
+    chain.networks.forEach(n => {
+      if (!addresses[n.token]) addresses[n.token] = {};
+      addresses[n.token][chain.id] = n.address;
+      fees[`${n.token}-${chain.id}`] = n.fee;
+      if (!tokens.includes(n.token)) tokens.push(n.token);
+    });
+  });
+
+  localStorage.setItem('cyro_addresses_snapshot', JSON.stringify(addresses));
+  localStorage.setItem('cyro_fees_snapshot', JSON.stringify(fees));
+}
+
+// =============================================
+// Render
+// =============================================
+function render() {
+  const cfg = getConfig();
+  const container = document.getElementById('chainAccordion');
+
+  container.innerHTML = cfg.chains.map((chain, ci) => {
+    const color = CHAIN_COLORS[chain.id] || '#888';
+    const activeNetworks = chain.networks.filter(n => n.active).length;
+
+    return `<div class="accordion-item" id="chain-${ci}">
+      <div class="accordion-header" onclick="toggleChain(${ci})">
+        <div class="left">
+          <div class="chain-icon" style="background:${color}">${chain.icon}</div>
+          <div class="chain-info">
+            <h3>${chain.label}</h3>
+            <div class="network-count">${activeNetworks}/${chain.networks.length} tokens active</div>
+          </div>
+        </div>
+        <div class="left" onclick="event.stopPropagation()">
+          <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-muted);cursor:pointer;margin-right:12px">
+            <input type="checkbox" ${chain.active ? 'checked' : ''} onchange="toggleChainActive(${ci}, this.checked)" style="accent-color:var(--gold)"> Active
+          </label>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+      <div class="accordion-body">
+        ${chain.networks.map((net, ni) => `
+          <div class="network-card">
+            <div class="nc-header">
+              <div class="nc-name">
+                <span class="nc-indicator ${net.active ? 'active' : 'inactive'}"></span>
+                ${net.token} on ${chain.label}
+              </div>
+              <div>
+                <button class="btn btn-sm btn-outline" onclick="editNetwork(${ci}, ${ni})">Edit</button>
+                <button class="btn btn-sm ${net.active ? 'btn-outline' : 'btn-success'}" onclick="toggleNetActive(${ci}, ${ni})">
+                  ${net.active ? 'Disable' : 'Enable'}
+                </button>
+              </div>
+            </div>
+            <div class="nc-field">
+              <label>Deposit Address</label>
+              <div class="nc-value">${net.address}</div>
+            </div>
+            <div class="nc-row">
+              <div class="nc-field">
+                <label>Network Fee (in ${net.token})</label>
+                <div class="nc-value">${net.fee} ${net.token}</div>
+              </div>
+              <div class="nc-field">
+                <label>Status</label>
+                <div class="nc-value" style="color:${net.active ? '#4ade80' : 'var(--text-light)'}">${net.active ? 'Active' : 'Inactive'}</div>
+              </div>
+            </div>
+            <div class="nc-actions" id="editFields-${ci}-${ni}" style="display:none">
+              <div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+                <div>
+                  <label style="font-size:11px;color:var(--text-light)">Address</label>
+                  <input type="text" id="addrInput-${ci}-${ni}" value="${net.address}" style="font-size:11px">
+                </div>
+                <div>
+                  <label style="font-size:11px;color:var(--text-light)">Fee</label>
+                  <input type="number" id="feeInput-${ci}-${ni}" value="${net.fee}" min="0" step="0.1" style="font-size:11px">
+                </div>
+                <div>
+                  <label style="font-size:11px;color:var(--text-light)">Token</label>
+                  <select id="tokenInput-${ci}-${ni}" style="width:100%;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-size:12px;outline:none">
+                    <option value="USDT" ${net.token === 'USDT' ? 'selected' : ''}>USDT</option>
+                    <option value="USDC" ${net.token === 'USDC' ? 'selected' : ''}>USDC</option>
+                    <option value="CYRO" ${net.token === 'CYRO' ? 'selected' : ''}>CYRO</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;align-items:flex-end">
+                <button class="btn btn-sm btn-success" onclick="saveNetwork(${ci}, ${ni})">Save</button>
+                <button class="btn btn-sm btn-outline" onclick="cancelEditNet(${ci}, ${ni})">Cancel</button>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+        <div style="margin-top:10px">
+          <button class="btn btn-sm btn-outline" onclick="addTokenToChain(${ci})">+ Add Token</button>
+          <button class="btn btn-sm btn-danger" onclick="removeChain(${ci})" style="margin-left:6px">Delete Chain</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// =============================================
+// Actions
+// =============================================
+function toggleChain(ci) {
+  document.getElementById(`chain-${ci}`).classList.toggle('open');
+}
+
+function toggleChainActive(ci, checked) {
+  const cfg = getConfig();
+  cfg.chains[ci].active = checked;
+  saveConfig(cfg);
+  syncToLegacy(cfg);
+  render();
+  showToast(`${cfg.chains[ci].label} ${checked ? 'enabled' : 'disabled'}`);
+}
+
+function toggleNetActive(ci, ni) {
+  const cfg = getConfig();
+  cfg.chains[ci].networks[ni].active = !cfg.chains[ci].networks[ni].active;
+  saveConfig(cfg);
+  syncToLegacy(cfg);
+  render();
+  showToast(`${cfg.chains[ci].networks[ni].token} on ${cfg.chains[ci].label} ${cfg.chains[ci].networks[ni].active ? 'enabled' : 'disabled'}`);
+}
+
+function editNetwork(ci, ni) {
+  document.getElementById(`editFields-${ci}-${ni}`).style.display = 'flex';
+}
+function cancelEditNet(ci, ni) {
+  const cfg = getConfig();
+  const net = cfg.chains[ci].networks[ni];
+  document.getElementById(`addrInput-${ci}-${ni}`).value = net.address;
+  document.getElementById(`feeInput-${ci}-${ni}`).value = net.fee;
+  document.getElementById(`editFields-${ci}-${ni}`).style.display = 'none';
+}
+function saveNetwork(ci, ni) {
+  const cfg = getConfig();
+  const net = cfg.chains[ci].networks[ni];
+  net.address = document.getElementById(`addrInput-${ci}-${ni}`).value.trim();
+  net.fee = parseFloat(document.getElementById(`feeInput-${ci}-${ni}`).value) || 0;
+  net.token = document.getElementById(`tokenInput-${ci}-${ni}`).value;
+  saveConfig(cfg);
+  syncToLegacy(cfg);
+  document.getElementById(`editFields-${ci}-${ni}`).style.display = 'none';
+  render();
+  showToast(`Updated ${net.token} on ${cfg.chains[ci].label}`);
+}
+
+function addTokenToChain(ci) {
+  const cfg = getConfig();
+  const tokens = cfg.chains[ci].networks.map(n => n.token);
+  const available = ['USDT', 'USDC', 'CYRO'].filter(t => !tokens.includes(t));
+  if (available.length === 0) { showToast('All tokens already added to this chain', true); return; }
+
+  const newToken = available[0];
+  cfg.chains[ci].networks.push({
+    token: newToken,
+    address: `0xNEW_${newToken}_ADDRESS`,
+    fee: 1.00,
+    active: true
+  });
+  saveConfig(cfg);
+  syncToLegacy(cfg);
+  render();
+  // Open the chain
+  document.getElementById(`chain-${ci}`).classList.add('open');
+  showToast(`Added ${newToken} to ${cfg.chains[ci].label}. Edit the address.`);
+}
+
+function removeChain(ci) {
+  const cfg = getConfig();
+  const name = cfg.chains[ci].label;
+  if (!confirm(`Remove "${name}" and all its token configurations?`)) return;
+  cfg.chains.splice(ci, 1);
+  saveConfig(cfg);
+  syncToLegacy(cfg);
+  render();
+  showToast(`${name} removed`);
+}
+
+function addNetwork() {
+  const name = prompt('Enter new chain name (e.g. Polygon, Arbitrum):');
+  if (!name || !name.trim()) return;
+  const id = name.trim();
+  const label = name.trim();
+  const icon = label.slice(0, 3).toUpperCase();
+
+  const cfg = getConfig();
+  if (cfg.chains.find(c => c.id === id)) { showToast('Chain already exists', true); return; }
+
+  cfg.chains.push({
+    id, label, active: true, icon,
+    networks: [
+      { token: 'USDT', address: `0xNEW_${id}_USDT`, fee: 1.00, active: true },
+      { token: 'USDC', address: `0xNEW_${id}_USDC`, fee: 1.00, active: true },
+      { token: 'CYRO', address: `0xNEW_${id}_CYRO`, fee: 2.00, active: true }
+    ]
+  });
+  saveConfig(cfg);
+  syncToLegacy(cfg);
+  render();
+  showToast(`Chain "${label}" added. Edit deposit addresses before use.`);
+}
+
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// =============================================
+// Init
+// =============================================
+render();
+</script>
+</body>
+</html>

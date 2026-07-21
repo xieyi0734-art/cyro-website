@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transactions — CYRO Admin</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#E59303;--gold-light:rgba(229,147,3,0.08);--gold-mid:rgba(229,147,3,0.15);
+  --bg:#0b0b1a;--text:#e8e8f0;--text-muted:#a0a0b8;--text-light:#6a6a80;
+  --border:#2a2a40;--card-bg:#111128;--radius:8px;
+  --font:-apple-system,'Inter','Segoe UI',sans-serif;--font-mono:'SF Mono','Fira Code',monospace;
+  --side-w:220px;
+}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;min-height:100vh;line-height:1.5}
+/* Sidebar */
+.sidebar{
+  width:var(--side-w);background:var(--card-bg);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10;
+}
+.sidebar .logo{
+  padding:20px 20px 16px;border-bottom:1px solid var(--border);
+  font-size:18px;font-weight:700;letter-spacing:1px;display:flex;align-items:center;gap:8px;
+}
+.sidebar .logo .g{color:var(--gold)}
+.sidebar .logo .sub{font-size:9px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:1.5px;margin-left:4px}
+.sidebar nav{padding:12px 0;flex:1}
+.sidebar nav a{
+  display:flex;align-items:center;gap:10px;padding:10px 20px;text-decoration:none;
+  color:var(--text-muted);font-size:14px;transition:all 0.15s;border-left:3px solid transparent;
+}
+.sidebar nav a:hover{color:var(--text);background:var(--gold-light)}
+.sidebar nav a.active{color:var(--gold);background:var(--gold-light);border-left-color:var(--gold);font-weight:600}
+.sidebar nav a .ico{width:18px;text-align:center;font-size:15px}
+.sidebar .back-link{padding:16px 20px;border-top:1px solid var(--border);font-size:12px}
+.sidebar .back-link a{color:var(--text-muted);text-decoration:none}
+.sidebar .back-link a:hover{color:var(--gold)}
+/* Main */
+.main{margin-left:var(--side-w);flex:1;padding:32px;max-width:1200px}
+.header{margin-bottom:24px}
+.header h1{font-size:22px;font-weight:700}
+.header h1 span{color:var(--gold)}
+.header .stats{display:flex;gap:20px;font-size:13px;color:var(--text-muted);margin-top:4px;flex-wrap:wrap}
+.header .stats b{color:var(--text);font-size:15px}
+/* Tabs */
+.tab-bar{display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid var(--border)}
+.tab-btn{
+  padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;border:none;
+  background:transparent;color:var(--text-muted);border-bottom:2px solid transparent;transition:all 0.15s;
+}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-pane{display:none}
+.tab-pane.show{display:block}
+/* Toolbar */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.toolbar .left{display:flex;gap:8px;align-items:center}
+.toolbar .left input{
+  background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:8px 12px;color:var(--text);font-size:13px;width:200px;outline:none;
+}
+.toolbar .left input:focus{border-color:var(--gold)}
+.toolbar .left select{
+  background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:8px 12px;color:var(--text);font-size:13px;outline:none;
+}
+/* Table */
+.table-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:rgba(229,147,3,0.04)}
+th{padding:12px 16px;text-align:left;font-weight:600;color:var(--text-muted);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)}
+td{padding:12px 16px;border-bottom:1px solid rgba(42,42,64,0.5);color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(229,147,3,0.02)}
+td .tx-mono{font-family:var(--font-mono);font-size:11px;color:var(--text-light)}
+td .type-badge{
+  display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:600;
+}
+.type-badge.deposit{background:rgba(22,163,74,0.12);color:#4ade80}
+.type-badge.withdraw{background:rgba(229,147,3,0.12);color:var(--gold)}
+td .status-badge{
+  display:inline-flex;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:600;
+}
+.status-badge.completed{background:rgba(22,163,74,0.12);color:#4ade80}
+.status-badge.pending{background:rgba(234,179,8,0.12);color:#eab308}
+.status-badge.failed{background:rgba(220,38,38,0.12);color:#f87171}
+/* Empty */
+.empty{text-align:center;padding:48px 20px;color:var(--text-light);font-size:14px}
+.empty .ico{font-size:36px;margin-bottom:12px;opacity:0.4}
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;background:#16a34a;color:#fff;padding:12px 20px;
+  border-radius:var(--radius);font-size:13px;font-weight:600;z-index:2000;
+  opacity:0;transform:translateY(12px);transition:all 0.3s;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.error{background:#dc2626}
+/* Responsive */
+@media(max-width:768px){
+  .sidebar{width:56px}
+  .sidebar .logo span,.sidebar nav a span{display:none}
+  .sidebar nav a{padding:10px 18px;justify-content:center}
+  .sidebar nav a .ico{font-size:18px}
+  .sidebar .logo{padding:16px;justify-content:center}
+  .sidebar .logo .sub{display:none}
+  .sidebar .back-link{display:none}
+  .main{margin-left:56px;padding:20px 14px}
+  .header .stats{font-size:12px;gap:12px}
+  .toolbar{flex-direction:column;align-items:stretch}
+  .toolbar .left{flex-wrap:wrap}
+  .toolbar .left input{width:100%}
+  table{font-size:12px}
+  th,td{padding:10px 8px}
+  .tab-btn{padding:8px 14px;font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="logo">
+    <span class="g">CY</span>RO<span class="sub">Admin</span>
+  </div>
+  <nav>
+    <a href="admin.html"><span class="ico">◉</span><span>Dashboard</span></a>
+    <a href="admin-users.html"><span class="ico">◎</span><span>Users</span></a>
+    <a href="admin-transactions.html" class="active"><span class="ico">↔</span><span>Transactions</span></a>
+    <a href="admin-rates.html"><span class="ico">%</span><span>Token Rates</span></a>
+    <a href="admin-chains.html"><span class="ico">⛓</span><span>Networks</span></a>
+  </nav>
+  <div class="back-link"><a href="index.html">← Back to site</a></div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <div class="header">
+    <h1><span>Transaction</span> Records</h1>
+    <div class="stats">
+      <span>Total: <b id="totalTx">0</b></span>
+      <span>Deposits: <b id="totalDeposits">0</b></span>
+      <span>Withdrawals: <b id="totalWithdrawals">0</b></span>
+      <span>Total Volume: <b id="totalVolume">0</b> CYRO</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('all')">All</button>
+    <button class="tab-btn" onclick="switchTab('deposit')">Deposits</button>
+    <button class="tab-btn" onclick="switchTab('withdraw')">Withdrawals</button>
+  </div>
+
+  <div class="toolbar">
+    <div class="left">
+      <input type="text" id="searchInput" placeholder="Search TXID or email..." oninput="renderAll()">
+      <select id="statusFilter" onchange="renderAll()">
+        <option value="all">All Status</option>
+        <option value="completed">Completed</option>
+        <option value="pending">Pending</option>
+        <option value="failed">Failed</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>User</th>
+          <th>Token</th>
+          <th>Amount</th>
+          <th>CYRO</th>
+          <th>Network</th>
+          <th>TXID</th>
+          <th>Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="txTableBody"></tbody>
+    </table>
+    <div class="empty" id="emptyState" style="display:none">
+      <div class="ico">↔</div>
+      <div>No transactions found</div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================
+// Data
+// =============================================
+let currentTab = 'all';
+
+function getDeposits() {
+  return JSON.parse(localStorage.getItem('cyro_deposits') || '[]');
+}
+function getWithdrawals() {
+  return JSON.parse(localStorage.getItem('cyro_withdrawals') || '[]');
+}
+
+// Seed demo data if empty
+function seedData() {
+  if (getDeposits().length === 0 && getWithdrawals().length === 0) {
+    const demoDeposits = [
+      { txid: '0x1a2b3c4d5e6f7890abcdef1234567890abcdef12', email: 'alice@example.com', token: 'USDT', amount: 500, cyroAmount: 5000, network: 'Ethereum', date: '2026-06-15 09:30', status: 'completed' },
+      { txid: '7Y3xG8QpL2mNvK5jR9tW1zB4cD6f', email: 'bob@test.io', token: 'USDC', amount: 250, cyroAmount: 2375, network: 'Solana', date: '2026-06-18 14:22', status: 'completed' },
+      { txid: '0x4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4', email: 'alice@example.com', token: 'CYRO', amount: 1000, cyroAmount: 1000, network: 'BNB Chain', date: '2026-06-20 11:05', status: 'pending' },
+    ];
+    const demoWithdrawals = [
+      { txid: 'WD-20260621-001', email: 'alice@example.com', token: 'USDT', amount: 100, cyroAmount: 1000, fee: 3.20, receive: 96.80, network: 'Ethereum', date: '2026-06-21 16:45', status: 'completed', address: '0xabc...def' },
+      { txid: 'WD-20260622-001', email: 'carol@demo.org', token: 'USDC', amount: 50, cyroAmount: 475, fee: 0.50, receive: 49.50, network: 'Solana', date: '2026-06-22 08:10', status: 'completed', address: '8Z4y...P5r' },
+      { txid: 'WD-20260623-001', email: 'bob@test.io', token: 'CYRO', amount: 200, cyroAmount: 200, fee: 8.00, receive: 192.00, network: 'Ethereum', date: '2026-06-23 19:30', status: 'failed', address: '0xdef...789' },
+    ];
+    localStorage.setItem('cyro_deposits', JSON.stringify(demoDeposits));
+    localStorage.setItem('cyro_withdrawals', JSON.stringify(demoWithdrawals));
+  }
+}
+
+function getAllTransactions() {
+  const deposits = getDeposits().map(d => ({ ...d, _type: 'deposit' }));
+  const withdrawals = getWithdrawals().map(w => ({ ...w, _type: 'withdraw' }));
+  return [...deposits, ...withdrawals].sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+// =============================================
+// Render
+// =============================================
+function renderAll() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const statusFilter = document.getElementById('statusFilter').value;
+
+  let txs = currentTab === 'all' ? getAllTransactions()
+    : currentTab === 'deposit' ? getDeposits().map(d => ({ ...d, _type: 'deposit' }))
+    : getWithdrawals().map(w => ({ ...w, _type: 'withdraw' }));
+
+  let filtered = txs.filter(tx => {
+    if (statusFilter !== 'all' && tx.status !== statusFilter) return false;
+    if (search) {
+      const str = (tx.txid + ' ' + tx.email).toLowerCase();
+      if (!str.includes(search)) return false;
+    }
+    return true;
+  });
+
+  const tbody = document.getElementById('txTableBody');
+  const empty = document.getElementById('emptyState');
+
+  // Update stats
+  const all = getAllTransactions();
+  const deps = getDeposits();
+  const wds = getWithdrawals();
+  const totalVol = all.reduce((s, tx) => s + (parseFloat(tx.cyroAmount) || 0), 0);
+  document.getElementById('totalTx').textContent = all.length;
+  document.getElementById('totalDeposits').textContent = deps.length;
+  document.getElementById('totalWithdrawals').textContent = wds.length;
+  document.getElementById('totalVolume').textContent = totalVol.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map(tx => {
+    const isDeposit = tx._type === 'deposit';
+    const txidShort = tx.txid.length > 14 ? tx.txid.slice(0, 8) + '...' + tx.txid.slice(-6) : tx.txid;
+    const amountStr = tx.amount.toLocaleString(undefined, {minimumFractionDigits:2,maximumFractionDigits:2});
+    const cyroStr = tx.cyroAmount.toLocaleString(undefined, {minimumFractionDigits:2,maximumFractionDigits:2});
+    const statusClass = tx.status === 'completed' || tx.status === 'success' ? 'completed'
+      : tx.status === 'pending' ? 'pending' : 'failed';
+
+    let extra = '';
+    if (!isDeposit && tx.fee) {
+      extra = ` (fee: ${tx.fee} ${tx.token})`;
+    }
+
+    return `<tr>
+      <td><span class="type-badge ${isDeposit ? 'deposit' : 'withdraw'}">${isDeposit ? '↓ Deposit' : '↑ Withdraw'}</span></td>
+      <td style="font-size:12px">${tx.email}</td>
+      <td style="font-weight:600">${tx.token}</td>
+      <td>${amountStr} ${tx.token}${extra}</td>
+      <td><b>${cyroStr}</b> CYRO</td>
+      <td style="font-size:12px;color:var(--text-light)">${tx.network}</td>
+      <td><span class="tx-mono" title="${tx.txid}">${txidShort}</span></td>
+      <td style="font-size:12px;color:var(--text-light)">${tx.date}</td>
+      <td><span class="status-badge ${statusClass}">${tx.status}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.textContent.toLowerCase().startsWith(tab === 'all' ? 'all' : tab)) b.classList.add('active');
+  });
+  renderAll();
+}
+
+// =============================================
+// Init
+// =============================================
+seedData();
+renderAll();
+</script>
+</body>
+</html>

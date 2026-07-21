@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CYRO Admin Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#E59303;--gold-light:rgba(229,147,3,0.08);--gold-mid:rgba(229,147,3,0.15);
+  --bg:#0b0b1a;--text:#e8e8f0;--text-muted:#a0a0b8;--text-light:#6a6a80;
+  --border:#2a2a40;--card-bg:#111128;--radius:8px;
+  --font:-apple-system,'Inter','Segoe UI',sans-serif;
+  --side-w:220px;
+}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;min-height:100vh;line-height:1.5}
+.sidebar{
+  width:var(--side-w);background:var(--card-bg);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10;
+}
+.sidebar .logo{
+  padding:20px 20px 16px;border-bottom:1px solid var(--border);
+  font-size:18px;font-weight:700;letter-spacing:1px;display:flex;align-items:center;gap:8px;
+}
+.sidebar .logo .g{color:var(--gold)}
+.sidebar .logo .sub{font-size:9px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:1.5px;margin-left:4px}
+.sidebar nav{padding:12px 0;flex:1}
+.sidebar nav a{
+  display:flex;align-items:center;gap:10px;padding:10px 20px;text-decoration:none;
+  color:var(--text-muted);font-size:14px;transition:all 0.15s;border-left:3px solid transparent;
+}
+.sidebar nav a:hover{color:var(--text);background:var(--gold-light)}
+.sidebar nav a.active{color:var(--gold);background:var(--gold-light);border-left-color:var(--gold);font-weight:600}
+.sidebar nav a .ico{width:18px;text-align:center;font-size:15px}
+.sidebar .back-link{padding:16px 20px;border-top:1px solid var(--border);font-size:12px}
+.sidebar .back-link a{color:var(--text-muted);text-decoration:none}
+.sidebar .back-link a:hover{color:var(--gold)}
+.main{margin-left:var(--side-w);flex:1;padding:32px;max-width:1200px}
+.header{margin-bottom:32px}
+.header h1{font-size:24px;font-weight:700}
+.header h1 span{color:var(--gold)}
+.header .sub{font-size:14px;color:var(--text-muted);margin-top:4px}
+/* Stat cards */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:32px}
+.stat-card{
+  background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px;
+  transition:border 0.15s;
+}
+.stat-card:hover{border-color:var(--gold-mid)}
+.stat-card .sc-icon{font-size:22px;margin-bottom:8px}
+.stat-card .sc-value{font-size:28px;font-weight:700;margin-bottom:2px}
+.stat-card .sc-label{font-size:13px;color:var(--text-muted)}
+.stat-card .sc-sub{font-size:11px;color:var(--text-light);margin-top:4px}
+/* Module cards */
+.module-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.module-card{
+  background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:24px;
+  text-decoration:none;transition:all 0.2s;display:flex;flex-direction:column;
+}
+.module-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+.module-card .mc-icon{font-size:28px;margin-bottom:8px}
+.module-card .mc-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px}
+.module-card .mc-desc{font-size:13px;color:var(--text-muted);line-height:1.5}
+.module-card .mc-link{font-size:12px;color:var(--gold);margin-top:auto;padding-top:14px;font-weight:600}
+@media(max-width:768px){
+  .sidebar{width:56px}
+  .sidebar .logo span,.sidebar nav a span{display:none}
+  .sidebar nav a{padding:10px 18px;justify-content:center}
+  .sidebar nav a .ico{font-size:18px}
+  .sidebar .logo{padding:16px;justify-content:center}
+  .sidebar .logo .sub{display:none}
+  .sidebar .back-link{display:none}
+  .main{margin-left:56px;padding:20px 14px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .module-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><span class="g">CY</span>RO<span class="sub">Admin</span></div>
+  <nav>
+    <a href="admin.html" class="active"><span class="ico">◉</span><span>Dashboard</span></a>
+    <a href="admin-users.html"><span class="ico">◎</span><span>Users</span></a>
+    <a href="admin-transactions.html"><span class="ico">↔</span><span>Transactions</span></a>
+    <a href="admin-rates.html"><span class="ico">%</span><span>Token Rates</span></a>
+    <a href="admin-chains.html"><span class="ico">⛓</span><span>Networks</span></a>
+  </nav>
+  <div class="back-link"><a href="index.html">← Back to site</a></div>
+</div>
+
+<div class="main">
+  <div class="header">
+    <h1><span>CYRO</span> Admin Dashboard</h1>
+    <div class="sub">Platform overview and quick access to management modules.</div>
+  </div>
+
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+      <div class="sc-icon">◎</div>
+      <div class="sc-value" id="statUsers">—</div>
+      <div class="sc-label">Registered Users</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-icon">↓</div>
+      <div class="sc-value" id="statDeposits">—</div>
+      <div class="sc-label">Total Deposits</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-icon">↑</div>
+      <div class="sc-value" id="statWithdrawals">—</div>
+      <div class="sc-label">Total Withdrawals</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-icon">⛓</div>
+      <div class="sc-value" id="statChains">—</div>
+      <div class="sc-label">Active Networks</div>
+    </div>
+  </div>
+
+  <div class="module-grid">
+    <a href="admin-users.html" class="module-card">
+      <div class="mc-icon">◎</div>
+      <div class="mc-title">User Management</div>
+      <div class="mc-desc">View, add, suspend, or delete platform users. Manage balances and account status.</div>
+      <div class="mc-link">Manage Users →</div>
+    </a>
+    <a href="admin-transactions.html" class="module-card">
+      <div class="mc-icon">↔</div>
+      <div class="mc-title">Transaction Records</div>
+      <div class="mc-desc">Browse all deposits and withdrawals. Filter by type, status, user, or date.</div>
+      <div class="mc-link">View Transactions →</div>
+    </a>
+    <a href="admin-rates.html" class="module-card">
+      <div class="mc-icon">%</div>
+      <div class="mc-title">Token Rate Settings</div>
+      <div class="mc-desc">Configure exchange rates (token → CYRO) and minimum deposit amounts.</div>
+      <div class="mc-link">Configure Rates →</div>
+    </a>
+    <a href="admin-chains.html" class="module-card">
+      <div class="mc-icon">⛓</div>
+      <div class="mc-title">Network & Chain Settings</div>
+      <div class="mc-desc">Manage supported blockchains, deposit addresses, network fees, and token mappings.</div>
+      <div class="mc-link">Configure Networks →</div>
+    </a>
+  </div>
+</div>
+
+<script>
+function refreshStats() {
+  const users = JSON.parse(localStorage.getItem('cyro_users') || '[]');
+  const deposits = JSON.parse(localStorage.getItem('cyro_deposits') || '[]');
+  const withdrawals = JSON.parse(localStorage.getItem('cyro_withdrawals') || '[]');
+  const chainCfg = JSON.parse(localStorage.getItem('cyro_chain_config') || 'null');
+
+  document.getElementById('statUsers').textContent = users.length;
+  document.getElementById('statDeposits').textContent = deposits.length;
+  document.getElementById('statWithdrawals').textContent = withdrawals.length;
+  document.getElementById('statChains').textContent = chainCfg ? chainCfg.chains.filter(c => c.active).length : '0';
+}
+refreshStats();
+</script>
+</body>
+</html>
