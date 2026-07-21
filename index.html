@@ -113,7 +113,7 @@ nav .logo .logo-tagline {
 .user-dropdown {
   display: none;
   position: absolute;
-  top: calc(100% + 10px);
+  top: 100%;
   right: 0;
   width: 260px;
   background: var(--card-bg);
@@ -121,13 +121,13 @@ nav .logo .logo-tagline {
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.12);
   padding: 16px;
+  padding-top: 12px;
   z-index: 200;
 }
 @media (prefers-color-scheme: dark) {
   .user-dropdown { box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
 }
-.nav-user:hover .user-dropdown,
-.user-dropdown:hover { display: block; }
+.nav-user:hover .user-dropdown { display: block; }
 .user-dropdown .ud-header {
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
@@ -1543,6 +1543,24 @@ document.getElementById('navLogoutBtn')?.addEventListener('click', () => {
   window.location.reload();
 });
 updateNavForAuth();
+
+// Dropdown: stay open when hovering avatar OR dropdown
+(function() {
+  const navUser = document.getElementById('navUser');
+  const dropdown = document.getElementById('userDropdown');
+  let hideTimer = null;
+  function showDropdown() {
+    if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+    dropdown.style.display = 'block';
+  }
+  function hideDropdown() {
+    hideTimer = setTimeout(() => { dropdown.style.display = 'none'; }, 500);
+  }
+  navUser.addEventListener('mouseenter', showDropdown);
+  navUser.addEventListener('mouseleave', hideDropdown);
+  dropdown.addEventListener('mouseenter', showDropdown);
+  dropdown.addEventListener('mouseleave', hideDropdown);
+})();
 
 // Respect system color scheme
 (function(){
