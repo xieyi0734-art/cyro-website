@@ -120,6 +120,40 @@ body {
   margin-bottom: 28px;
 }
 
+/* === Lock-up Notice === */
+.lockup-notice {
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: rgba(229,147,3,0.08);
+  border: 1px solid rgba(229,147,3,0.25);
+  margin-bottom: 24px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.lockup-notice .lockup-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.lockup-notice .lockup-body {
+  flex: 1;
+}
+.lockup-notice .lockup-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+.lockup-notice .lockup-text {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+.lockup-notice .lockup-text strong {
+  color: var(--text);
+}
+
 /* === Form === */
 .form-group {
   margin-bottom: 20px;
@@ -465,6 +499,19 @@ body {
     <div class="alert alert-error" id="alertBox"></div>
     <div class="alert alert-success" id="successBox"></div>
 
+    <!-- Lock-up Period Notice -->
+    <div class="lockup-notice">
+      <div class="lockup-icon">🔒</div>
+      <div class="lockup-body">
+        <div class="lockup-title">Token Swap Only During Lock-up Period</div>
+        <div class="lockup-text">
+          CYRO is currently in its lock-up phase. During this period, deposits are <strong>automatically converted to CYRO</strong> at the prevailing rate — functioning as a token swap.
+          <br><br>
+          <strong>Withdrawals are not yet available.</strong> Once the lock-up period ends and public trading begins, CYRO can be freely withdrawn or traded on supported exchanges.
+        </div>
+      </div>
+    </div>
+
     <form id="depositForm" novalidate>
       <div class="form-group">
         <label for="token">Token</label>
@@ -503,9 +550,9 @@ body {
 
     <!-- Conversion Preview -->
     <div class="conversion-box" id="conversionBox">
-      <div class="conv-title">Auto-Conversion</div>
+      <div class="conv-title">Auto-Conversion to CYRO</div>
       <div class="conv-row">
-        <span class="conv-label">Deposit amount</span>
+        <span class="conv-label">You send</span>
         <span class="conv-value" id="convFrom">—</span>
       </div>
       <div class="conv-arrow">↓</div>
@@ -570,7 +617,6 @@ const ADDRESSES = {
 };
 
 // Admin-configured exchange rates: how much CYRO you get per 1 unit of token
-// 后台管理员配置的汇率：每个 token 可兑换多少 CYRO
 const RATES = {
   USDT: 10,    // 1 USDT = 10 CYRO
   USDC: 9.5,   // 1 USDC = 9.5 CYRO
@@ -855,16 +901,21 @@ simBtn.addEventListener('click', function() {
 // 8. Init
 // =============================================
 
-updateAddress();
-renderDeposits();
-
-// Auth guard
+// Seed demo data if empty
 (function() {
-  const user = JSON.parse(localStorage.getItem('cyro_user') || 'null');
-  if (!user) {
-    window.location.href = 'signin.html?redirect=deposit.html';
+  const deposits = getDeposits();
+  if (deposits.length === 0) {
+    const demoDeposits = [
+      { id: 'demo3', token: 'USDT', network: 'Ethereum', amount: 500, cyroAmount: 5000, time: Date.now() - 3600000 * 2, txid: '0xdemo3...abcd' },
+      { id: 'demo2', token: 'USDC', network: 'Solana', amount: 200, cyroAmount: 1900, time: Date.now() - 3600000 * 24, txid: '0xdemo2...ef01' },
+      { id: 'demo1', token: 'CYRO', network: 'BNB Chain', amount: 1000, cyroAmount: 1000, time: Date.now() - 3600000 * 48, txid: '0xdemo1...2345' },
+    ];
+    saveDeposits(demoDeposits);
   }
 })();
+
+updateAddress();
+renderDeposits();
 </script>
 
 </body>
